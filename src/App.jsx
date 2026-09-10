@@ -240,7 +240,7 @@ export default function App() {
     setAiResponse('');
     try {
       if (selectedOption === 'plantDiagnosis' && uploadedFile) {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
         const prompt = `Act as an expert plant pathologist. Analyze this plant image and identify any diseases, nutrient deficiencies, or pest damage. Provide: 1. Diagnosis 2. Possible causes 3. Treatment recommendations (organic and chemical). Respond in ${LANGUAGES[language]}. User context/question: ${userInput}`;
         const imagePart = await fileToGenerativePart(uploadedFile);
         
@@ -249,7 +249,7 @@ export default function App() {
         setAiResponse(response.text());
         speakResponse(response.text());
       } else {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
         const prompt = getPromptForOption(selectedOption, userInput);
         const result = await model.generateContent(prompt);
         const response = await result.response;
@@ -304,20 +304,28 @@ export default function App() {
 
       {/* Header */}
       <header className="relative z-20 border-b border-white/10 bg-slate-950/20 backdrop-blur-3xl w-full">
-        <div className="w-full px-4 md:px-8 h-16 md:h-20 flex items-center justify-between">
+        <div className="w-full px-4 md:px-8 h-16 md:h-24 flex items-center justify-between">
           <motion.div 
             initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
-            className="flex items-center gap-3 md:gap-5 cursor-pointer"
+            className="flex items-center gap-4 md:gap-6 cursor-pointer"
             onClick={() => {
               setLanguage(null);
               setCurrentScreen('language');
             }}
           >
-            <div className="relative">
-              <div className="absolute inset-0 bg-emerald-500 blur-lg opacity-40 animate-pulse"></div>
-              <img src="/logo.png" alt="Gramvikash Logo" className="w-10 h-10 md:w-12 md:h-12 rounded-xl object-cover relative z-10 border border-white/20 shadow-xl" />
-            </div>
-            <h1 className="font-heading font-extrabold text-xl md:text-2xl tracking-tighter bg-gradient-to-r from-emerald-300 via-teal-100 to-white bg-clip-text text-transparent">
+            {/* UPGRADED HEADER LOGO */}
+            <motion.div 
+              animate={{ y: [0, -4, 0] }} 
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              className="relative"
+            >
+              <div className="absolute inset-0 bg-emerald-400 blur-xl opacity-60 animate-pulse"></div>
+              <div className="relative z-10 p-[2px] rounded-xl md:rounded-[1.25rem] bg-gradient-to-tr from-emerald-400 via-teal-200 to-white shadow-[0_0_20px_rgba(52,211,153,0.5)] overflow-hidden">
+                <img src="/logo.png" alt="Gramvikash Logo" className="w-10 h-10 md:w-14 md:h-14 rounded-[10px] md:rounded-xl object-cover brightness-110 contrast-125" />
+              </div>
+            </motion.div>
+            
+            <h1 className="font-heading font-black text-2xl md:text-3xl tracking-tighter bg-gradient-to-r from-emerald-300 via-teal-100 to-white bg-clip-text text-transparent drop-shadow-sm">
               Gramvikash
             </h1>
           </motion.div>
@@ -334,7 +342,7 @@ export default function App() {
                   setLanguage(null);
                   setCurrentScreen('language');
                 }}
-                className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 hover:text-white transition-colors backdrop-blur-xl"
+                className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/5 border border-emerald-500/30 flex items-center justify-center text-emerald-100 hover:text-white transition-colors backdrop-blur-xl shadow-[0_0_15px_rgba(16,185,129,0.2)] hover:shadow-[0_0_25px_rgba(16,185,129,0.5)]"
               >
                 <Home className="w-5 h-5 md:w-6 md:h-6" />
               </motion.button>
@@ -343,7 +351,7 @@ export default function App() {
         </div>
       </header>
 
-      <main className="flex-1 relative z-10 w-full h-[calc(100dvh-4rem)] md:h-[calc(100dvh-5rem)] flex overflow-hidden">
+      <main className="flex-1 relative z-10 w-full h-[calc(100dvh-4rem)] md:h-[calc(100dvh-6rem)] flex overflow-hidden">
         <AnimatePresence mode="wait">
           
           {/* LANGUAGE SCREEN */}
@@ -355,21 +363,35 @@ export default function App() {
             >
               {/* Left Side: Branding */}
               <div className="w-full md:w-1/2 min-h-[50vh] md:h-full flex flex-col justify-center p-8 md:p-16 lg:p-24 bg-gradient-to-b md:bg-gradient-to-r from-slate-950/80 to-transparent backdrop-blur-sm md:border-r border-b md:border-b-0 border-white/5 relative z-10">
-                <motion.div initial={{ scale: 0, rotate: -20 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", delay: 0.2 }} className="w-24 h-24 md:w-32 md:h-32 mb-8 md:mb-12 relative mx-auto md:mx-0">
-                  <div className="absolute inset-0 bg-emerald-500/40 rounded-[2rem] blur-2xl animate-pulse"></div>
-                  <img src="/logo.png" alt="Logo" className="w-full h-full object-cover rounded-[2rem] border border-white/20 relative z-10 shadow-2xl" />
+                
+                {/* UPGRADED SPLASH SCREEN LOGO */}
+                <motion.div 
+                  initial={{ scale: 0, rotate: -20 }} 
+                  animate={{ scale: 1, rotate: 0, y: [0, -12, 0] }} 
+                  transition={{ 
+                    scale: { type: "spring", delay: 0.2 },
+                    rotate: { type: "spring", delay: 0.2 },
+                    y: { duration: 5, repeat: Infinity, ease: "easeInOut" } 
+                  }} 
+                  className="w-32 h-32 md:w-48 md:h-48 mb-8 md:mb-12 relative mx-auto md:mx-0"
+                >
+                  <div className="absolute inset-0 bg-emerald-400/70 rounded-[3rem] blur-3xl animate-pulse"></div>
+                  <div className="relative z-10 p-[3px] rounded-[3rem] bg-gradient-to-tr from-emerald-400 via-teal-100 to-white shadow-[0_0_50px_rgba(52,211,153,0.7)]">
+                    <img src="/logo.png" alt="Logo" className="w-full h-full object-cover rounded-[2.75rem] brightness-110 contrast-125" />
+                  </div>
                 </motion.div>
-                <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="font-heading text-5xl md:text-6xl lg:text-8xl font-black text-white mb-4 md:mb-6 tracking-tighter leading-[1.1] text-center md:text-left">
-                  Rural<br className="hidden md:block"/><span className="text-emerald-400 md:block">Intelligence.</span>
+
+                <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="font-heading text-5xl md:text-6xl lg:text-8xl font-black text-white mb-4 md:mb-6 tracking-tighter leading-[1.1] text-center md:text-left drop-shadow-xl">
+                  Rural<br className="hidden md:block"/><span className="text-emerald-400 md:block drop-shadow-[0_0_15px_rgba(52,211,153,0.5)]">Intelligence.</span>
                 </motion.h1>
-                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="text-slate-400 text-lg md:text-2xl font-light max-w-xl leading-relaxed text-center md:text-left mx-auto md:mx-0">
+                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="text-slate-300 text-lg md:text-2xl font-light max-w-xl leading-relaxed text-center md:text-left mx-auto md:mx-0">
                   {t.subtitle}
                 </motion.p>
               </div>
               
               {/* Right Side: Selection */}
               <div className="w-full md:w-1/2 min-h-[50vh] md:h-full flex flex-col justify-start md:justify-center p-8 md:p-16 lg:p-24 bg-white/5 backdrop-blur-3xl relative z-10">
-                <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="text-emerald-400 font-bold tracking-[0.3em] uppercase text-xs md:text-sm mb-8 md:mb-12 text-center md:text-left">{t.selectLanguage}</motion.h2>
+                <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="text-emerald-400 font-bold tracking-[0.3em] uppercase text-xs md:text-sm mb-8 md:mb-12 text-center md:text-left drop-shadow-md">{t.selectLanguage}</motion.h2>
                 <motion.div 
                   variants={containerVariants} initial="hidden" animate="show"
                   className="grid grid-cols-2 md:grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6 w-full"
@@ -459,7 +481,7 @@ export default function App() {
                 <motion.button
                   whileHover={{ x: -10 }}
                   onClick={() => setCurrentScreen('menu')}
-                  className="flex items-center gap-2 text-slate-300 font-bold hover:text-white transition-colors text-base md:text-lg bg-white/5 px-4 py-2 rounded-full border border-white/5"
+                  className="flex items-center gap-2 text-emerald-100 font-bold hover:text-white transition-colors text-base md:text-lg bg-emerald-500/10 px-4 py-2 rounded-full border border-emerald-500/30 hover:bg-emerald-500/20"
                 >
                   <ChevronLeft className="w-6 h-6 md:w-7 md:h-7" /> {t.back}
                 </motion.button>
@@ -469,11 +491,14 @@ export default function App() {
               {/* Chat History Area */}
               <div className="flex-1 overflow-y-auto p-4 md:p-10 flex flex-col gap-6 md:gap-10 custom-scrollbar relative z-10">
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="flex gap-3 md:gap-6 w-full">
-                  <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex-shrink-0 flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.4)]">
-                    <img src="/logo.png" alt="AI" className="w-6 h-6 md:w-8 md:h-8 object-cover rounded-lg" />
+                  
+                  {/* UPGRADED CHAT AVATAR */}
+                  <div className="relative w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex-shrink-0 flex items-center justify-center p-[2px] bg-gradient-to-tr from-emerald-400 to-teal-100 shadow-[0_0_20px_rgba(16,185,129,0.5)]">
+                    <img src="/logo.png" alt="AI" className="w-full h-full object-cover rounded-[10px] md:rounded-[14px] brightness-110 contrast-125" />
                   </div>
-                  <div className="bg-slate-900/80 border border-white/10 rounded-2xl md:rounded-[2rem] rounded-tl-sm md:rounded-tl-lg p-4 md:p-8 text-white max-w-[90%] md:max-w-[80%] text-base md:text-xl font-light leading-relaxed backdrop-blur-xl shadow-xl">
-                    Hello! How can I help you with <strong className="text-emerald-300 font-bold">{t[selectedOption]}</strong> today?
+
+                  <div className="bg-slate-900/80 border border-emerald-500/20 rounded-2xl md:rounded-[2rem] rounded-tl-sm md:rounded-tl-lg p-4 md:p-8 text-white max-w-[90%] md:max-w-[80%] text-base md:text-xl font-light leading-relaxed backdrop-blur-xl shadow-xl">
+                    Hello! How can I help you with <strong className="text-emerald-400 font-bold">{t[selectedOption]}</strong> today?
                     {selectedOption === 'plantDiagnosis' && " Please upload a clear photo of the affected plant."}
                   </div>
                 </motion.div>
@@ -494,10 +519,10 @@ export default function App() {
 
                 {isLoading && (
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex gap-3 md:gap-6 w-full">
-                    <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex-shrink-0 flex items-center justify-center">
-                      <Loader2 className="w-5 h-5 md:w-7 md:h-7 animate-spin text-emerald-400" />
+                    <div className="relative w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex-shrink-0 flex items-center justify-center p-[2px] bg-gradient-to-tr from-emerald-400 to-teal-100 shadow-[0_0_20px_rgba(16,185,129,0.5)]">
+                       <Loader2 className="w-5 h-5 md:w-7 md:h-7 animate-spin text-slate-900" />
                     </div>
-                    <div className="bg-slate-900/80 border border-white/10 rounded-2xl md:rounded-[2rem] rounded-tl-sm md:rounded-tl-lg p-4 md:p-8 text-slate-300 text-base md:text-xl flex items-center backdrop-blur-xl shadow-xl">
+                    <div className="bg-slate-900/80 border border-emerald-500/20 rounded-2xl md:rounded-[2rem] rounded-tl-sm md:rounded-tl-lg p-4 md:p-8 text-emerald-100 text-base md:text-xl flex items-center backdrop-blur-xl shadow-xl">
                       Analyzing agricultural data...
                     </div>
                   </motion.div>
@@ -505,11 +530,14 @@ export default function App() {
 
                 {aiResponse && !isLoading && (
                   <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex gap-3 md:gap-6 w-full">
-                    <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex-shrink-0 flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.4)]">
-                      <img src="/logo.png" alt="AI" className="w-6 h-6 md:w-8 md:h-8 object-cover rounded-lg" />
+                    
+                    {/* UPGRADED CHAT AVATAR */}
+                    <div className="relative w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex-shrink-0 flex items-center justify-center p-[2px] bg-gradient-to-tr from-emerald-400 to-teal-100 shadow-[0_0_20px_rgba(16,185,129,0.5)]">
+                      <img src="/logo.png" alt="AI" className="w-full h-full object-cover rounded-[10px] md:rounded-[14px] brightness-110 contrast-125" />
                     </div>
-                    <div className="bg-slate-900/90 border border-white/20 rounded-2xl md:rounded-[2rem] rounded-tl-sm md:rounded-tl-lg p-5 md:p-10 text-white max-w-[95%] md:max-w-[85%] relative group shadow-2xl backdrop-blur-2xl">
-                      <div className="prose prose-invert prose-emerald max-w-none font-light leading-relaxed text-base md:text-xl" dangerouslySetInnerHTML={{ __html: aiResponse.replace(/\n/g, '<br/>').replace(/\*\*(.*?)\*\*/g, '<strong class="text-emerald-300 font-bold">$1</strong>') }} />
+
+                    <div className="bg-slate-900/90 border border-emerald-500/30 rounded-2xl md:rounded-[2rem] rounded-tl-sm md:rounded-tl-lg p-5 md:p-10 text-white max-w-[95%] md:max-w-[85%] relative group shadow-[0_0_30px_rgba(16,185,129,0.1)] backdrop-blur-2xl">
+                      <div className="prose prose-invert prose-emerald max-w-none font-light leading-relaxed text-base md:text-xl" dangerouslySetInnerHTML={{ __html: aiResponse.replace(/\n/g, '<br/>').replace(/\*\*(.*?)\*\*/g, '<strong class="text-emerald-400 font-bold">$1</strong>') }} />
                       <motion.button
                         whileHover={{ scale: 1.1, rotate: -10 }}
                         whileTap={{ scale: 0.9 }}
