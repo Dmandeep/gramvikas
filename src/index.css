@@ -1,13 +1,13 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Outfit", system-ui, sans-serif;
-  --font-heading: "Space Grotesk", system-ui, sans-serif;
+  --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-heading: "Sora", system-ui, sans-serif;
 }
 
 @layer base {
   body {
-    @apply bg-slate-950 text-slate-50 antialiased overflow-x-hidden selection:bg-emerald-500/30;
+    @apply antialiased overflow-x-hidden transition-colors duration-500;
     font-family: var(--font-sans);
   }
   
@@ -24,9 +24,9 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #94a3b8; /* Slate-400 equivalent for good visibility on light and dark */
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: #64748b;
 }

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Mic, MicOff, Upload, ChevronLeft, Home, Leaf, Bug, AlertCircle, FileText, TrendingUp, Volume2, Send, Loader2, Image as ImageIcon, X, Sparkles } from 'lucide-react';
+import { Mic, MicOff, Upload, ChevronLeft, Home, Leaf, Bug, AlertCircle, FileText, TrendingUp, Volume2, Send, Loader2, Image as ImageIcon, X, Sparkles, Sun, Moon } from 'lucide-react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
 
@@ -52,6 +52,51 @@ const CONTENT = {
   }
 };
 
+const THEMES = {
+  dark: {
+    bg: 'bg-slate-950',
+    text: 'text-slate-50',
+    textMuted: 'text-slate-400',
+    textHeading: 'text-white',
+    cardBg: 'bg-slate-900/60',
+    headerBg: 'bg-slate-950/20',
+    border: 'border-white/10',
+    hoverBg: 'hover:bg-white/10',
+    inputBg: 'bg-slate-900/80',
+    inputAreaBg: 'bg-slate-950/60',
+    auroraBg: 'bg-[#020617]',
+    aurora1: 'bg-emerald-600/30',
+    aurora2: 'bg-blue-800/30',
+    grid: 'bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)]',
+    star: 'bg-white',
+    chatUserBg: 'bg-emerald-600/30',
+    chatAiBg: 'bg-slate-900/90',
+    prose: 'prose-invert',
+    iconBg: 'bg-white/5'
+  },
+  light: {
+    bg: 'bg-slate-50',
+    text: 'text-slate-800',
+    textMuted: 'text-slate-500',
+    textHeading: 'text-slate-950',
+    cardBg: 'bg-white/60',
+    headerBg: 'bg-white/40',
+    border: 'border-slate-200',
+    hoverBg: 'hover:bg-slate-100',
+    inputBg: 'bg-white/80',
+    inputAreaBg: 'bg-white/60',
+    auroraBg: 'bg-slate-50',
+    aurora1: 'bg-emerald-400/40',
+    aurora2: 'bg-blue-400/30',
+    grid: 'bg-[linear-gradient(to_right,#00000005_1px,transparent_1px),linear-gradient(to_bottom,#00000005_1px,transparent_1px)]',
+    star: 'bg-emerald-500/30',
+    chatUserBg: 'bg-emerald-50',
+    chatAiBg: 'bg-white/90',
+    prose: '',
+    iconBg: 'bg-slate-100'
+  }
+};
+
 const fileToGenerativePart = async (file) => {
   const base64EncodedDataPromise = new Promise((resolve) => {
     const reader = new FileReader();
@@ -64,12 +109,10 @@ const fileToGenerativePart = async (file) => {
 };
 
 // --- INTERACTIVE & AURORA BACKGROUND ---
-const PremiumBackground = ({ mouseX, mouseY }) => (
-  <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 bg-[#020617]">
-    {/* Architectural Grid */}
-    <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:48px_48px]"></div>
+const PremiumBackground = ({ mouseX, mouseY, c }) => (
+  <div className={`fixed inset-0 pointer-events-none overflow-hidden z-0 ${c.auroraBg} transition-colors duration-500`}>
+    <div className={`absolute inset-0 ${c.grid} bg-[size:48px_48px] transition-colors duration-500`}></div>
     
-    {/* Interactive Mouse Glow */}
     <motion.div
       className="absolute top-0 left-0 w-[600px] h-[600px] bg-emerald-500/20 rounded-full blur-[150px] hidden md:block"
       style={{
@@ -80,7 +123,6 @@ const PremiumBackground = ({ mouseX, mouseY }) => (
       }}
     />
 
-    {/* Aurora Waves */}
     <motion.div 
       animate={{ 
         x: ['-20vw', '20vw', '-20vw'],
@@ -89,7 +131,7 @@ const PremiumBackground = ({ mouseX, mouseY }) => (
         scale: [1, 1.2, 1]
       }}
       transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-      className="absolute -top-[20%] left-[10%] w-[80vw] h-[40vh] rounded-[100%] bg-emerald-600/30 blur-[120px] mix-blend-screen transform-gpu"
+      className={`absolute -top-[20%] left-[10%] w-[80vw] h-[40vh] rounded-[100%] ${c.aurora1} blur-[120px] mix-blend-multiply dark:mix-blend-screen transform-gpu transition-colors duration-700`}
     />
     
     <motion.div 
@@ -100,14 +142,13 @@ const PremiumBackground = ({ mouseX, mouseY }) => (
         scale: [1.2, 1, 1.2]
       }}
       transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-      className="absolute top-[40%] right-[10%] w-[70vw] h-[50vh] rounded-[100%] bg-blue-800/30 blur-[130px] mix-blend-screen transform-gpu"
+      className={`absolute top-[40%] right-[10%] w-[70vw] h-[50vh] rounded-[100%] ${c.aurora2} blur-[130px] mix-blend-multiply dark:mix-blend-screen transform-gpu transition-colors duration-700`}
     />
     
-    {/* Floating Starfield / Particles */}
     {[...Array(40)].map((_, i) => (
       <motion.div
         key={`star-${i}`}
-        className="absolute rounded-full bg-white"
+        className={`absolute rounded-full ${c.star} transition-colors duration-500`}
         style={{
           width: Math.random() * 3 + 1 + 'px',
           height: Math.random() * 3 + 1 + 'px',
@@ -128,12 +169,14 @@ const PremiumBackground = ({ mouseX, mouseY }) => (
       />
     ))}
     
-    {/* Grain Overlay */}
-    <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.06] mix-blend-overlay"></div>
+    <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.04] mix-blend-overlay"></div>
   </div>
 );
 
 export default function App() {
+  const [theme, setTheme] = useState('dark');
+  const c = THEMES[theme];
+
   const [language, setLanguage] = useState(null);
   const [currentScreen, setCurrentScreen] = useState('language'); 
   const [selectedOption, setSelectedOption] = useState(null);
@@ -149,7 +192,6 @@ export default function App() {
   
   const chatEndRef = useRef(null);
   
-  // Mouse tracking for background
   const cursorX = useMotionValue(-1000);
   const cursorY = useMotionValue(-1000);
   const springConfig = { damping: 25, stiffness: 150 };
@@ -273,20 +315,15 @@ export default function App() {
     }
   };
 
-  // --- ADVANCED SLIDING PAGE TRANSITIONS ---
   const pageVariants = {
     initial: { opacity: 0, x: 150, scale: 0.95, filter: 'blur(10px)' },
     in: { opacity: 1, x: 0, scale: 1, filter: 'blur(0px)', transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] } },
     out: { opacity: 0, x: -150, scale: 0.95, filter: 'blur(10px)', transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } }
   };
 
-  // Internal staggering for lists
   const containerVariants = {
     hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: { staggerChildren: 0.08, delayChildren: 0.3 }
-    }
+    show: { opacity: 1, transition: { staggerChildren: 0.08, delayChildren: 0.3 } }
   };
 
   const itemVariants = {
@@ -296,14 +333,13 @@ export default function App() {
 
   return (
     <div 
-      className="h-[100dvh] w-screen bg-slate-950 text-slate-50 relative overflow-hidden flex flex-col font-sans selection:bg-emerald-500/30"
+      className={`h-[100dvh] w-screen ${c.bg} ${c.text} relative overflow-hidden flex flex-col font-sans selection:bg-emerald-500/30 transition-colors duration-500`}
       onMouseMove={handleMouseMove}
     >
-      
-      <PremiumBackground mouseX={mouseX} mouseY={mouseY} />
+      <PremiumBackground mouseX={mouseX} mouseY={mouseY} c={c} />
 
       {/* Header */}
-      <header className="relative z-20 border-b border-white/10 bg-slate-950/20 backdrop-blur-3xl w-full">
+      <header className={`relative z-20 border-b ${c.border} ${c.headerBg} backdrop-blur-3xl w-full transition-colors duration-500`}>
         <div className="w-full px-4 md:px-8 h-16 md:h-24 flex items-center justify-between">
           <motion.div 
             initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
@@ -313,7 +349,6 @@ export default function App() {
               setCurrentScreen('language');
             }}
           >
-            {/* UPGRADED HEADER LOGO */}
             <motion.div 
               animate={{ y: [0, -4, 0] }} 
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
@@ -325,29 +360,40 @@ export default function App() {
               </div>
             </motion.div>
             
-            <h1 className="font-heading font-black text-2xl md:text-3xl tracking-tighter bg-gradient-to-r from-emerald-300 via-teal-100 to-white bg-clip-text text-transparent drop-shadow-sm">
+            <h1 className={`font-heading font-black text-2xl md:text-3xl tracking-tighter bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent drop-shadow-sm`}>
               Gramvikash
             </h1>
           </motion.div>
           
-          <AnimatePresence>
-            {currentScreen !== 'language' && (
-              <motion.button 
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0 }}
-                whileHover={{ scale: 1.1, backgroundColor: 'rgba(255,255,255,0.1)' }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => {
-                  setLanguage(null);
-                  setCurrentScreen('language');
-                }}
-                className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/5 border border-emerald-500/30 flex items-center justify-center text-emerald-100 hover:text-white transition-colors backdrop-blur-xl shadow-[0_0_15px_rgba(16,185,129,0.2)] hover:shadow-[0_0_25px_rgba(16,185,129,0.5)]"
-              >
-                <Home className="w-5 h-5 md:w-6 md:h-6" />
-              </motion.button>
-            )}
-          </AnimatePresence>
+          <div className="flex items-center gap-4">
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className={`w-10 h-10 md:w-12 md:h-12 rounded-full ${c.iconBg} border ${c.border} flex items-center justify-center ${c.textMuted} hover:${c.textHeading} transition-colors backdrop-blur-xl shadow-lg`}
+            >
+              {theme === 'dark' ? <Sun className="w-5 h-5 md:w-6 md:h-6" /> : <Moon className="w-5 h-5 md:w-6 md:h-6" />}
+            </motion.button>
+
+            <AnimatePresence>
+              {currentScreen !== 'language' && (
+                <motion.button 
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0 }}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => {
+                    setLanguage(null);
+                    setCurrentScreen('language');
+                  }}
+                  className={`w-10 h-10 md:w-12 md:h-12 rounded-full ${c.iconBg} border border-emerald-500/30 flex items-center justify-center text-emerald-500 hover:text-emerald-400 transition-colors backdrop-blur-xl shadow-[0_0_15px_rgba(16,185,129,0.2)] hover:shadow-[0_0_25px_rgba(16,185,129,0.5)]`}
+                >
+                  <Home className="w-5 h-5 md:w-6 md:h-6" />
+                </motion.button>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </header>
 
@@ -361,10 +407,7 @@ export default function App() {
               initial="initial" animate="in" exit="out" variants={pageVariants}
               className="w-full h-full flex flex-col md:flex-row overflow-y-auto md:overflow-hidden absolute inset-0"
             >
-              {/* Left Side: Branding */}
-              <div className="w-full md:w-1/2 min-h-[50vh] md:h-full flex flex-col justify-center p-8 md:p-16 lg:p-24 bg-gradient-to-b md:bg-gradient-to-r from-slate-950/80 to-transparent backdrop-blur-sm md:border-r border-b md:border-b-0 border-white/5 relative z-10">
-                
-                {/* UPGRADED SPLASH SCREEN LOGO */}
+              <div className={`w-full md:w-1/2 min-h-[50vh] md:h-full flex flex-col justify-center p-8 md:p-16 lg:p-24 bg-gradient-to-b md:bg-gradient-to-r from-${theme === 'dark' ? 'slate-950/80' : 'slate-50/80'} to-transparent backdrop-blur-sm md:border-r border-b md:border-b-0 ${c.border} relative z-10 transition-colors duration-500`}>
                 <motion.div 
                   initial={{ scale: 0, rotate: -20 }} 
                   animate={{ scale: 1, rotate: 0, y: [0, -12, 0] }} 
@@ -376,22 +419,21 @@ export default function App() {
                   className="w-32 h-32 md:w-48 md:h-48 mb-8 md:mb-12 relative mx-auto md:mx-0"
                 >
                   <div className="absolute inset-0 bg-emerald-400/70 rounded-[3rem] blur-3xl animate-pulse"></div>
-                  <div className="relative z-10 p-[3px] rounded-[3rem] bg-gradient-to-tr from-emerald-400 via-teal-100 to-white shadow-[0_0_50px_rgba(52,211,153,0.7)]">
+                  <div className={`relative z-10 p-[3px] rounded-[3rem] bg-gradient-to-tr from-emerald-400 via-teal-100 to-white shadow-[0_0_50px_rgba(52,211,153,0.7)]`}>
                     <img src="/logo.png" alt="Logo" className="w-full h-full object-cover rounded-[2.75rem] brightness-110 contrast-125" />
                   </div>
                 </motion.div>
 
-                <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="font-heading text-5xl md:text-6xl lg:text-8xl font-black text-white mb-4 md:mb-6 tracking-tighter leading-[1.1] text-center md:text-left drop-shadow-xl">
-                  Rural<br className="hidden md:block"/><span className="text-emerald-400 md:block drop-shadow-[0_0_15px_rgba(52,211,153,0.5)]">Intelligence.</span>
+                <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className={`font-heading text-5xl md:text-6xl lg:text-8xl font-black ${c.textHeading} mb-4 md:mb-6 tracking-tighter leading-[1.1] text-center md:text-left drop-shadow-xl transition-colors duration-500`}>
+                  Rural<br className="hidden md:block"/><span className="text-emerald-500 md:block drop-shadow-[0_0_15px_rgba(52,211,153,0.3)]">Intelligence.</span>
                 </motion.h1>
-                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="text-slate-300 text-lg md:text-2xl font-light max-w-xl leading-relaxed text-center md:text-left mx-auto md:mx-0">
+                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className={`${c.textMuted} text-lg md:text-2xl font-medium max-w-xl leading-relaxed text-center md:text-left mx-auto md:mx-0 transition-colors duration-500`}>
                   {t.subtitle}
                 </motion.p>
               </div>
               
-              {/* Right Side: Selection */}
-              <div className="w-full md:w-1/2 min-h-[50vh] md:h-full flex flex-col justify-start md:justify-center p-8 md:p-16 lg:p-24 bg-white/5 backdrop-blur-3xl relative z-10">
-                <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="text-emerald-400 font-bold tracking-[0.3em] uppercase text-xs md:text-sm mb-8 md:mb-12 text-center md:text-left drop-shadow-md">{t.selectLanguage}</motion.h2>
+              <div className={`w-full md:w-1/2 min-h-[50vh] md:h-full flex flex-col justify-start md:justify-center p-8 md:p-16 lg:p-24 ${theme==='light' ? 'bg-white/40' : 'bg-white/5'} backdrop-blur-3xl relative z-10 transition-colors duration-500`}>
+                <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="text-emerald-500 font-bold tracking-[0.3em] uppercase text-xs md:text-sm mb-8 md:mb-12 text-center md:text-left drop-shadow-md">{t.selectLanguage}</motion.h2>
                 <motion.div 
                   variants={containerVariants} initial="hidden" animate="show"
                   className="grid grid-cols-2 md:grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6 w-full"
@@ -400,10 +442,10 @@ export default function App() {
                     <motion.button
                       key={code}
                       variants={itemVariants}
-                      whileHover={{ scale: 1.05, backgroundColor: 'rgba(16, 185, 129, 0.2)' }}
+                      whileHover={{ scale: 1.05, backgroundColor: 'rgba(16, 185, 129, 0.15)' }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => handleLanguageSelect(code)}
-                      className="w-full py-6 md:py-8 flex items-center justify-center text-xl md:text-2xl lg:text-3xl font-heading font-bold border border-white/10 rounded-2xl md:rounded-[2rem] bg-slate-900/60 text-slate-200 hover:text-emerald-300 hover:border-emerald-500/50 transition-all shadow-xl backdrop-blur-md"
+                      className={`w-full py-6 md:py-8 flex items-center justify-center text-xl md:text-2xl lg:text-3xl font-heading font-bold border ${c.border} rounded-2xl md:rounded-[2rem] ${c.cardBg} ${c.textHeading} hover:text-emerald-500 hover:border-emerald-500/50 transition-all shadow-xl backdrop-blur-md`}
                     >
                       {name}
                     </motion.button>
@@ -423,7 +465,7 @@ export default function App() {
               <div className="mb-6 md:mb-10 text-center lg:text-left pt-2 md:pt-0">
                 <motion.h1 
                   initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}
-                  className="font-heading text-3xl md:text-5xl font-black text-white tracking-tighter"
+                  className={`font-heading text-3xl md:text-5xl font-black ${c.textHeading} tracking-tighter`}
                 >
                   {t.selectOption}
                 </motion.h1>
@@ -434,12 +476,12 @@ export default function App() {
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 flex-1 w-full pb-8"
               >
                 {[
-                  { key: 'cropAdvice', icon: Leaf, gradient: 'from-emerald-600/40 to-emerald-900/10', color: 'text-emerald-400', border: 'hover:border-emerald-500' },
-                  { key: 'pestControl', icon: Bug, gradient: 'from-orange-600/40 to-orange-900/10', color: 'text-orange-400', border: 'hover:border-orange-500' },
-                  { key: 'emergency', icon: AlertCircle, gradient: 'from-red-600/40 to-red-900/10', color: 'text-red-400', border: 'hover:border-red-500' },
-                  { key: 'plantDiagnosis', icon: Upload, gradient: 'from-blue-600/40 to-blue-900/10', color: 'text-blue-400', border: 'hover:border-blue-500' },
-                  { key: 'govSchemes', icon: FileText, gradient: 'from-purple-600/40 to-purple-900/10', color: 'text-purple-400', border: 'hover:border-purple-500' },
-                  { key: 'marketInfo', icon: TrendingUp, gradient: 'from-yellow-600/40 to-yellow-900/10', color: 'text-yellow-400', border: 'hover:border-yellow-500' }
+                  { key: 'cropAdvice', icon: Leaf, gradient: 'from-emerald-500/30 to-emerald-900/10', color: 'text-emerald-500', border: 'hover:border-emerald-500' },
+                  { key: 'pestControl', icon: Bug, gradient: 'from-orange-500/30 to-orange-900/10', color: 'text-orange-500', border: 'hover:border-orange-500' },
+                  { key: 'emergency', icon: AlertCircle, gradient: 'from-red-500/30 to-red-900/10', color: 'text-red-500', border: 'hover:border-red-500' },
+                  { key: 'plantDiagnosis', icon: Upload, gradient: 'from-blue-500/30 to-blue-900/10', color: 'text-blue-500', border: 'hover:border-blue-500' },
+                  { key: 'govSchemes', icon: FileText, gradient: 'from-purple-500/30 to-purple-900/10', color: 'text-purple-500', border: 'hover:border-purple-500' },
+                  { key: 'marketInfo', icon: TrendingUp, gradient: 'from-yellow-500/30 to-yellow-900/10', color: 'text-yellow-500', border: 'hover:border-yellow-500' }
                 ].map(({ key, icon: Icon, gradient, color, border }) => (
                   <motion.button
                     key={key}
@@ -454,14 +496,14 @@ export default function App() {
                       setUploadedFile(null);
                       setUploadedImagePreview(null);
                     }}
-                    className={`group w-full min-h-[160px] md:min-h-[220px] lg:h-full bg-slate-900/60 backdrop-blur-2xl border border-white/10 rounded-3xl md:rounded-[3rem] shadow-2xl text-left flex flex-col justify-center p-6 md:p-10 ${border} transition-all relative overflow-hidden`}
+                    className={`group w-full min-h-[160px] md:min-h-[220px] lg:h-full ${c.cardBg} backdrop-blur-2xl border ${c.border} rounded-3xl md:rounded-[3rem] shadow-2xl text-left flex flex-col justify-center p-6 md:p-10 ${border} transition-all relative overflow-hidden`}
                   >
                     <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
-                    <div className={`w-14 h-14 md:w-20 md:h-20 rounded-2xl md:rounded-full bg-white/5 flex items-center justify-center mb-4 md:mb-6 border border-white/20 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500 relative z-10 backdrop-blur-xl shadow-lg`}>
+                    <div className={`w-14 h-14 md:w-20 md:h-20 rounded-2xl md:rounded-full ${c.iconBg} flex items-center justify-center mb-4 md:mb-6 border ${c.border} group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500 relative z-10 backdrop-blur-xl shadow-lg`}>
                       <Icon className={`w-7 h-7 md:w-10 md:h-10 ${color}`} />
                     </div>
-                    <h3 className="font-heading font-black text-white text-2xl md:text-3xl mb-2 md:mb-3 relative z-10 leading-tight group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-slate-400 transition-all">{t[key]}</h3>
-                    <p className="text-sm md:text-base text-slate-400 relative z-10 flex items-center gap-2 md:gap-3 group-hover:text-white transition-colors font-medium">
+                    <h3 className={`font-heading font-black ${c.textHeading} text-2xl md:text-3xl mb-2 md:mb-3 relative z-10 leading-tight group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-emerald-500 group-hover:to-teal-500 transition-all`}>{t[key]}</h3>
+                    <p className={`text-sm md:text-base ${c.textMuted} relative z-10 flex items-center gap-2 md:gap-3 group-hover:${c.textHeading} transition-colors font-semibold`}>
                       <Sparkles className="w-4 h-4 md:w-5 md:h-5 group-hover:animate-pulse" /> Start Analysis
                     </p>
                   </motion.button>
@@ -475,42 +517,39 @@ export default function App() {
             <motion.div 
               key="detail"
               initial="initial" animate="in" exit="out" variants={pageVariants}
-              className="w-full h-full flex flex-col bg-slate-950/20 backdrop-blur-sm absolute inset-0"
+              className={`w-full h-full flex flex-col ${theme==='light'?'bg-white/30':'bg-slate-950/20'} backdrop-blur-sm absolute inset-0`}
             >
-              <div className="px-4 md:px-8 py-4 md:py-6 border-b border-white/10 flex items-center justify-between bg-slate-900/50 backdrop-blur-xl z-20">
+              <div className={`px-4 md:px-8 py-4 md:py-6 border-b ${c.border} flex items-center justify-between ${c.headerBg} backdrop-blur-xl z-20`}>
                 <motion.button
                   whileHover={{ x: -10 }}
                   onClick={() => setCurrentScreen('menu')}
-                  className="flex items-center gap-2 text-emerald-100 font-bold hover:text-white transition-colors text-base md:text-lg bg-emerald-500/10 px-4 py-2 rounded-full border border-emerald-500/30 hover:bg-emerald-500/20"
+                  className={`flex items-center gap-2 text-emerald-600 dark:text-emerald-100 font-bold hover:text-emerald-500 transition-colors text-base md:text-lg ${c.iconBg} px-4 py-2 rounded-full border ${c.border} hover:${c.hoverBg}`}
                 >
                   <ChevronLeft className="w-6 h-6 md:w-7 md:h-7" /> {t.back}
                 </motion.button>
-                <h2 className="font-heading text-lg md:text-2xl font-black text-emerald-400 tracking-tight truncate ml-4 drop-shadow-md">{t[selectedOption]}</h2>
+                <h2 className="font-heading text-lg md:text-2xl font-black text-emerald-500 tracking-tight truncate ml-4 drop-shadow-sm">{t[selectedOption]}</h2>
               </div>
 
               {/* Chat History Area */}
               <div className="flex-1 overflow-y-auto p-4 md:p-10 flex flex-col gap-6 md:gap-10 custom-scrollbar relative z-10">
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="flex gap-3 md:gap-6 w-full">
-                  
-                  {/* UPGRADED CHAT AVATAR */}
                   <div className="relative w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex-shrink-0 flex items-center justify-center p-[2px] bg-gradient-to-tr from-emerald-400 to-teal-100 shadow-[0_0_20px_rgba(16,185,129,0.5)]">
                     <img src="/logo.png" alt="AI" className="w-full h-full object-cover rounded-[10px] md:rounded-[14px] brightness-110 contrast-125" />
                   </div>
-
-                  <div className="bg-slate-900/80 border border-emerald-500/20 rounded-2xl md:rounded-[2rem] rounded-tl-sm md:rounded-tl-lg p-4 md:p-8 text-white max-w-[90%] md:max-w-[80%] text-base md:text-xl font-light leading-relaxed backdrop-blur-xl shadow-xl">
-                    Hello! How can I help you with <strong className="text-emerald-400 font-bold">{t[selectedOption]}</strong> today?
+                  <div className={`${c.chatAiBg} border ${c.border} rounded-2xl md:rounded-[2rem] rounded-tl-sm md:rounded-tl-lg p-4 md:p-8 ${c.textHeading} max-w-[90%] md:max-w-[80%] text-base md:text-xl font-medium leading-relaxed backdrop-blur-xl shadow-xl`}>
+                    Hello! How can I help you with <strong className="text-emerald-500 font-bold">{t[selectedOption]}</strong> today?
                     {selectedOption === 'plantDiagnosis' && " Please upload a clear photo of the affected plant."}
                   </div>
                 </motion.div>
 
                 {(userInput || uploadedImagePreview) && (
                   <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="flex gap-3 md:gap-6 flex-row-reverse w-full">
-                    <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-emerald-600 flex-shrink-0 flex items-center justify-center text-white font-black text-lg md:text-xl shadow-[0_0_20px_rgba(5,150,105,0.4)] border border-emerald-400/30">
+                    <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-emerald-500 flex-shrink-0 flex items-center justify-center text-white font-black text-lg md:text-xl shadow-[0_0_20px_rgba(16,185,129,0.4)] border border-emerald-400/30">
                       U
                     </div>
-                    <div className="bg-emerald-600/30 border border-emerald-500/50 text-white rounded-2xl md:rounded-[2rem] rounded-tr-sm md:rounded-tr-lg p-4 md:p-8 max-w-[90%] md:max-w-[80%] text-base md:text-xl font-light backdrop-blur-xl shadow-2xl">
+                    <div className={`${c.chatUserBg} border border-emerald-500/30 ${c.textHeading} rounded-2xl md:rounded-[2rem] rounded-tr-sm md:rounded-tr-lg p-4 md:p-8 max-w-[90%] md:max-w-[80%] text-base md:text-xl font-medium backdrop-blur-xl shadow-2xl`}>
                       {uploadedImagePreview && (
-                        <img src={uploadedImagePreview} alt="Uploaded" className="rounded-xl md:rounded-2xl mb-3 md:mb-5 max-w-full max-h-48 md:max-h-80 object-cover border border-white/30 shadow-xl" />
+                        <img src={uploadedImagePreview} alt="Uploaded" className="rounded-xl md:rounded-2xl mb-3 md:mb-5 max-w-full max-h-48 md:max-h-80 object-cover border border-emerald-500/20 shadow-xl" />
                       )}
                       {userInput && <p>{userInput}</p>}
                     </div>
@@ -522,7 +561,7 @@ export default function App() {
                     <div className="relative w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex-shrink-0 flex items-center justify-center p-[2px] bg-gradient-to-tr from-emerald-400 to-teal-100 shadow-[0_0_20px_rgba(16,185,129,0.5)]">
                        <Loader2 className="w-5 h-5 md:w-7 md:h-7 animate-spin text-slate-900" />
                     </div>
-                    <div className="bg-slate-900/80 border border-emerald-500/20 rounded-2xl md:rounded-[2rem] rounded-tl-sm md:rounded-tl-lg p-4 md:p-8 text-emerald-100 text-base md:text-xl flex items-center backdrop-blur-xl shadow-xl">
+                    <div className={`${c.chatAiBg} border ${c.border} rounded-2xl md:rounded-[2rem] rounded-tl-sm md:rounded-tl-lg p-4 md:p-8 ${c.textMuted} text-base md:text-xl flex items-center backdrop-blur-xl shadow-xl font-medium`}>
                       Analyzing agricultural data...
                     </div>
                   </motion.div>
@@ -530,19 +569,16 @@ export default function App() {
 
                 {aiResponse && !isLoading && (
                   <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex gap-3 md:gap-6 w-full">
-                    
-                    {/* UPGRADED CHAT AVATAR */}
                     <div className="relative w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex-shrink-0 flex items-center justify-center p-[2px] bg-gradient-to-tr from-emerald-400 to-teal-100 shadow-[0_0_20px_rgba(16,185,129,0.5)]">
                       <img src="/logo.png" alt="AI" className="w-full h-full object-cover rounded-[10px] md:rounded-[14px] brightness-110 contrast-125" />
                     </div>
-
-                    <div className="bg-slate-900/90 border border-emerald-500/30 rounded-2xl md:rounded-[2rem] rounded-tl-sm md:rounded-tl-lg p-5 md:p-10 text-white max-w-[95%] md:max-w-[85%] relative group shadow-[0_0_30px_rgba(16,185,129,0.1)] backdrop-blur-2xl">
-                      <div className="prose prose-invert prose-emerald max-w-none font-light leading-relaxed text-base md:text-xl" dangerouslySetInnerHTML={{ __html: aiResponse.replace(/\n/g, '<br/>').replace(/\*\*(.*?)\*\*/g, '<strong class="text-emerald-400 font-bold">$1</strong>') }} />
+                    <div className={`${c.chatAiBg} border ${c.border} rounded-2xl md:rounded-[2rem] rounded-tl-sm md:rounded-tl-lg p-5 md:p-10 ${c.textHeading} max-w-[95%] md:max-w-[85%] relative group shadow-[0_0_30px_rgba(16,185,129,0.1)] backdrop-blur-2xl`}>
+                      <div className={`prose ${c.prose} prose-emerald max-w-none font-medium leading-relaxed text-base md:text-xl`} dangerouslySetInnerHTML={{ __html: aiResponse.replace(/\n/g, '<br/>').replace(/\*\*(.*?)\*\*/g, '<strong class="text-emerald-500 font-bold">$1</strong>') }} />
                       <motion.button
                         whileHover={{ scale: 1.1, rotate: -10 }}
                         whileTap={{ scale: 0.9 }}
                         onClick={() => speakResponse(aiResponse)}
-                        className="absolute -right-3 -bottom-3 md:-right-5 md:-bottom-5 p-3 md:p-4 bg-emerald-600 text-white rounded-xl md:rounded-2xl shadow-xl hover:bg-emerald-500 transition-colors border border-emerald-400/50"
+                        className="absolute -right-3 -bottom-3 md:-right-5 md:-bottom-5 p-3 md:p-4 bg-emerald-500 text-white rounded-xl md:rounded-2xl shadow-xl hover:bg-emerald-400 transition-colors border border-emerald-400/50"
                       >
                         <Volume2 className="w-5 h-5 md:w-6 md:h-6" />
                       </motion.button>
@@ -552,21 +588,15 @@ export default function App() {
                 <div ref={chatEndRef} className="h-4 md:h-10 shrink-0" />
               </div>
 
-              {/* Input Dock - Sticks to bottom */}
-              <div className="p-4 md:p-8 bg-slate-950/60 border-t border-white/10 relative z-20 backdrop-blur-3xl w-full mt-auto pb-safe shadow-[0_-20px_40px_rgba(0,0,0,0.5)]">
+              {/* Input Dock */}
+              <div className={`p-4 md:p-8 ${c.inputAreaBg} border-t ${c.border} relative z-20 backdrop-blur-3xl w-full mt-auto pb-safe shadow-[0_-20px_40px_rgba(0,0,0,0.1)]`}>
                 {selectedOption === 'plantDiagnosis' && !uploadedImagePreview && (
                   <div className="mb-3 md:mb-5">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="hidden"
-                      ref={fileInputRef}
-                    />
+                    <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" ref={fileInputRef} />
                     <motion.button 
                       whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                       onClick={() => fileInputRef.current?.click()}
-                      className="flex items-center justify-center md:justify-start gap-2 md:gap-3 w-full md:w-auto px-6 py-3 md:py-4 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-xl md:rounded-2xl text-sm md:text-lg font-bold hover:bg-emerald-500/20 transition-colors shadow-[0_0_15px_rgba(16,185,129,0.2)]"
+                      className="flex items-center justify-center md:justify-start gap-2 md:gap-3 w-full md:w-auto px-6 py-3 md:py-4 bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 rounded-xl md:rounded-2xl text-sm md:text-lg font-bold hover:bg-emerald-500/20 transition-colors shadow-[0_0_15px_rgba(16,185,129,0.1)]"
                     >
                       <ImageIcon className="w-5 h-5 md:w-6 md:h-6" /> {t.upload}
                     </motion.button>
@@ -574,25 +604,25 @@ export default function App() {
                 )}
 
                 {uploadedImagePreview && (
-                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-3 md:mb-5 inline-flex items-center gap-3 md:gap-5 bg-white/5 p-2 pr-4 md:pr-5 rounded-2xl border border-white/10 shadow-xl max-w-full backdrop-blur-xl">
-                    <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl overflow-hidden border border-white/20 shrink-0">
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`mb-3 md:mb-5 inline-flex items-center gap-3 md:gap-5 ${c.iconBg} p-2 pr-4 md:pr-5 rounded-2xl border ${c.border} shadow-xl max-w-full backdrop-blur-xl`}>
+                    <div className={`w-12 h-12 md:w-16 md:h-16 rounded-xl overflow-hidden border ${c.border} shrink-0`}>
                       <img src={uploadedImagePreview} alt="Preview" className="w-full h-full object-cover" />
                     </div>
-                    <span className="text-sm md:text-lg text-slate-300 font-medium truncate flex-1">{uploadedFile?.name}</span>
-                    <button onClick={removeImage} className="text-slate-500 hover:text-red-400 transition-colors p-2 bg-white/10 rounded-full shrink-0">
+                    <span className={`text-sm md:text-lg ${c.textHeading} font-bold truncate flex-1`}>{uploadedFile?.name}</span>
+                    <button onClick={removeImage} className={`text-slate-400 hover:text-red-500 transition-colors p-2 ${c.hoverBg} rounded-full shrink-0`}>
                       <X className="w-5 h-5 md:w-6 md:h-6" />
                     </button>
                   </motion.div>
                 )}
 
-                <div className="flex items-end gap-2 md:gap-4 bg-slate-900/80 p-2 md:p-3 rounded-2xl md:rounded-[2rem] border border-white/10 focus-within:border-emerald-500/50 focus-within:bg-slate-900 transition-all shadow-2xl w-full">
+                <div className={`flex items-end gap-2 md:gap-4 ${c.inputBg} p-2 md:p-3 rounded-2xl md:rounded-[2rem] border ${c.border} focus-within:border-emerald-500/50 transition-all shadow-2xl w-full`}>
                   <motion.button
                     whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                     onClick={handleVoiceInput}
                     className={`p-3 md:p-5 rounded-xl md:rounded-[1.5rem] flex-shrink-0 transition-all ${
                       isListening
                         ? 'bg-red-500 text-white shadow-[0_0_30px_rgba(239,68,68,0.6)] animate-pulse border border-red-400'
-                        : 'bg-white/5 text-slate-400 hover:text-emerald-400 hover:bg-white/10 border border-white/5'
+                        : `${c.iconBg} ${c.textMuted} hover:text-emerald-500 ${c.hoverBg} border ${c.border}`
                     }`}
                   >
                     {isListening ? <MicOff className="w-6 h-6 md:w-7 md:h-7" /> : <Mic className="w-6 h-6 md:w-7 md:h-7" />}
@@ -602,7 +632,7 @@ export default function App() {
                     value={userInput}
                     onChange={(e) => setUserInput(e.target.value)}
                     placeholder={t.ask}
-                    className="flex-1 max-h-32 md:max-h-60 min-h-[50px] md:min-h-[70px] bg-transparent border-0 focus:ring-0 resize-none p-3 md:p-5 text-white placeholder-slate-500 outline-none text-lg md:text-2xl font-light"
+                    className={`flex-1 max-h-32 md:max-h-60 min-h-[50px] md:min-h-[70px] bg-transparent border-0 focus:ring-0 resize-none p-3 md:p-5 ${c.textHeading} placeholder-${theme==='dark'?'slate-500':'slate-400'} outline-none text-lg md:text-2xl font-medium`}
                     rows={1}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
@@ -616,7 +646,7 @@ export default function App() {
                     whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                     onClick={handleSubmit}
                     disabled={isLoading || (!userInput.trim() && !uploadedFile)}
-                    className="p-3 md:p-5 bg-emerald-600 text-white rounded-xl md:rounded-[1.5rem] flex-shrink-0 hover:bg-emerald-500 transition-all disabled:bg-white/5 disabled:text-slate-600 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(16,185,129,0.4)] disabled:shadow-none border border-emerald-400/50 disabled:border-white/5"
+                    className={`p-3 md:p-5 bg-emerald-500 text-white rounded-xl md:rounded-[1.5rem] flex-shrink-0 hover:bg-emerald-400 transition-all disabled:${c.iconBg} disabled:text-slate-400 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(16,185,129,0.3)] disabled:shadow-none border border-emerald-400/50 disabled:${c.border}`}
                   >
                     <Send className="w-6 h-6 md:w-7 md:h-7" />
                   </motion.button>
