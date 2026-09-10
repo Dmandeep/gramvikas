@@ -108,20 +108,29 @@ const fileToGenerativePart = async (file) => {
   };
 };
 
-// --- HIGH-TECH INTELLIGENCE BACKGROUND ---
+// --- ULTRA-PREMIUM PRODUCTION BACKGROUND (Vercel/Linear Aesthetic) ---
 const PremiumBackground = ({ mouseX, mouseY, c, theme }) => (
   <div className={`fixed inset-0 pointer-events-none overflow-hidden z-0 ${c.auroraBg} transition-colors duration-700`}>
     
-    {/* 1. Scrolling Architectural Grid */}
+    {/* 1. Ambient Top Glow (Subtle, elegant breathing light) */}
     <motion.div 
-      animate={{ y: [0, 48] }}
-      transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-      className={`absolute inset-[-100%] ${c.grid} bg-[size:48px_48px] opacity-70 transition-colors duration-700`}
+      animate={{ opacity: [0.3, 0.6, 0.3], scale: [1, 1.05, 1] }}
+      transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+      className={`absolute -top-[20vh] left-1/2 -translate-x-1/2 w-[80vw] md:w-[60vw] h-[50vh] ${theme === 'dark' ? 'bg-emerald-600/20' : 'bg-emerald-400/30'} blur-[100px] md:blur-[140px] rounded-full`}
+    />
+
+    {/* 2. Edge-Faded Architectural Grid */}
+    <div 
+      className={`absolute inset-0 ${c.grid} bg-[size:40px_40px] ${theme === 'dark' ? 'opacity-40' : 'opacity-[0.15]'}`}
+      style={{
+        maskImage: 'radial-gradient(ellipse at 50% 50%, black 20%, transparent 80%)',
+        WebkitMaskImage: 'radial-gradient(ellipse at 50% 50%, black 20%, transparent 80%)',
+      }}
     />
     
-    {/* 2. Interactive Spotlight (Mouse tracking) */}
+    {/* 3. Interactive Mouse Spotlight (Subtle) */}
     <motion.div
-      className="absolute top-0 left-0 w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-[100px] hidden md:block"
+      className={`absolute top-0 left-0 w-[500px] h-[500px] ${theme === 'dark' ? 'bg-emerald-500/10' : 'bg-emerald-500/5'} rounded-full blur-[80px] hidden md:block`}
       style={{
         x: mouseX,
         y: mouseY,
@@ -130,67 +139,7 @@ const PremiumBackground = ({ mouseX, mouseY, c, theme }) => (
       }}
     />
 
-    {/* 3. AI Sonar / Radar Pulses */}
-    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100vw] h-[100vw] md:w-[60vw] md:h-[60vw]">
-      {[...Array(4)].map((_, i) => (
-        <motion.div
-          key={`pulse-${i}`}
-          className={`absolute inset-0 rounded-full border ${c.pulse}`}
-          initial={{ scale: 0.1, opacity: 1 }}
-          animate={{ scale: 1.5, opacity: 0 }}
-          transition={{ duration: 10, repeat: Infinity, delay: i * 2.5, ease: "linear" }}
-        />
-      ))}
-    </div>
-
-    {/* 4. Floating Tech Accents (Geometry) */}
-    {[...Array(25)].map((_, i) => (
-      <motion.div
-        key={`accent-${i}`}
-        className={`absolute flex items-center justify-center font-mono text-sm md:text-base ${c.accent} font-bold opacity-40`}
-        style={{
-          left: Math.random() * 100 + 'vw',
-          top: Math.random() * 100 + 'vh',
-        }}
-        animate={{
-          y: [0, -50, 0],
-          rotate: [0, 180, 360],
-          opacity: [0.2, 0.8, 0.2]
-        }}
-        transition={{
-          duration: Math.random() * 15 + 10,
-          repeat: Infinity,
-          ease: "linear",
-          delay: Math.random() * 5,
-        }}
-      >
-        {i % 3 === 0 ? '+' : i % 3 === 1 ? '×' : '·'}
-      </motion.div>
-    ))}
-
-    {/* 5. High-Speed Data Meteors */}
-    {[...Array(6)].map((_, i) => (
-      <motion.div
-        key={`meteor-${i}`}
-        className={`absolute h-[1px] w-[100px] md:w-[200px] bg-gradient-to-r from-transparent ${c.meteor} to-transparent`}
-        style={{
-          top: Math.random() * 100 + 'vh',
-          left: '-20vw',
-          rotate: '25deg'
-        }}
-        animate={{
-          x: ['-20vw', '120vw'],
-          opacity: [0, 1, 0]
-        }}
-        transition={{
-          duration: Math.random() * 1.5 + 1.5,
-          repeat: Infinity,
-          ease: "linear",
-          delay: Math.random() * 8 + i * 2,
-        }}
-      />
-    ))}
-    
+    {/* 4. Film Grain for cinematic texture */}
     <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] mix-blend-overlay"></div>
   </div>
 );
