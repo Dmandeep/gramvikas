@@ -67,6 +67,7 @@ const THEMES = {
     auroraBg: 'bg-[#020617]',
     aurora1: 'bg-emerald-600/30',
     aurora2: 'bg-blue-800/30',
+    aurora3: 'bg-teal-700/20',
     grid: 'bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)]',
     star: 'bg-white',
     chatUserBg: 'bg-emerald-600/30',
@@ -85,15 +86,16 @@ const THEMES = {
     hoverBg: 'hover:bg-slate-100',
     inputBg: 'bg-white/80',
     inputAreaBg: 'bg-white/60',
-    auroraBg: 'bg-slate-50',
-    aurora1: 'bg-emerald-400/40',
-    aurora2: 'bg-blue-400/30',
-    grid: 'bg-[linear-gradient(to_right,#00000005_1px,transparent_1px),linear-gradient(to_bottom,#00000005_1px,transparent_1px)]',
-    star: 'bg-emerald-500/30',
+    auroraBg: 'bg-slate-100',
+    aurora1: 'bg-emerald-400/50',
+    aurora2: 'bg-cyan-400/50',
+    aurora3: 'bg-emerald-200/60',
+    grid: 'bg-[linear-gradient(to_right,#00000008_1px,transparent_1px),linear-gradient(to_bottom,#00000008_1px,transparent_1px)]',
+    star: 'bg-emerald-500/50',
     chatUserBg: 'bg-emerald-50',
     chatAiBg: 'bg-white/90',
     prose: '',
-    iconBg: 'bg-slate-100'
+    iconBg: 'bg-white'
   }
 };
 
@@ -110,8 +112,8 @@ const fileToGenerativePart = async (file) => {
 
 // --- INTERACTIVE & AURORA BACKGROUND ---
 const PremiumBackground = ({ mouseX, mouseY, c }) => (
-  <div className={`fixed inset-0 pointer-events-none overflow-hidden z-0 ${c.auroraBg} transition-colors duration-500`}>
-    <div className={`absolute inset-0 ${c.grid} bg-[size:48px_48px] transition-colors duration-500`}></div>
+  <div className={`fixed inset-0 pointer-events-none overflow-hidden z-0 ${c.auroraBg} transition-colors duration-700`}>
+    <div className={`absolute inset-0 ${c.grid} bg-[size:48px_48px] transition-colors duration-700`}></div>
     
     <motion.div
       className="absolute top-0 left-0 w-[600px] h-[600px] bg-emerald-500/20 rounded-full blur-[150px] hidden md:block"
@@ -123,6 +125,7 @@ const PremiumBackground = ({ mouseX, mouseY, c }) => (
       }}
     />
 
+    {/* EXTREMELY VISIBLE AURORA WAVES */}
     <motion.div 
       animate={{ 
         x: ['-20vw', '20vw', '-20vw'],
@@ -131,7 +134,7 @@ const PremiumBackground = ({ mouseX, mouseY, c }) => (
         scale: [1, 1.2, 1]
       }}
       transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-      className={`absolute -top-[20%] left-[10%] w-[80vw] h-[40vh] rounded-[100%] ${c.aurora1} blur-[120px] mix-blend-multiply dark:mix-blend-screen transform-gpu transition-colors duration-700`}
+      className={`absolute -top-[20%] left-[10%] w-[80vw] h-[50vh] rounded-[100%] ${c.aurora1} blur-[100px] md:blur-[140px] transform-gpu transition-colors duration-700`}
     />
     
     <motion.div 
@@ -142,16 +145,27 @@ const PremiumBackground = ({ mouseX, mouseY, c }) => (
         scale: [1.2, 1, 1.2]
       }}
       transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-      className={`absolute top-[40%] right-[10%] w-[70vw] h-[50vh] rounded-[100%] ${c.aurora2} blur-[130px] mix-blend-multiply dark:mix-blend-screen transform-gpu transition-colors duration-700`}
+      className={`absolute top-[30%] right-[10%] w-[70vw] h-[60vh] rounded-[100%] ${c.aurora2} blur-[100px] md:blur-[140px] transform-gpu transition-colors duration-700`}
+    />
+
+    <motion.div 
+      animate={{ 
+        x: ['-10vw', '10vw', '-10vw'],
+        y: ['40vh', '20vh', '40vh'],
+        rotate: [0, 20, -20, 0],
+        scale: [0.8, 1.1, 0.8]
+      }}
+      transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+      className={`absolute top-[20%] left-[20%] w-[50vw] h-[50vh] rounded-[100%] ${c.aurora3} blur-[100px] transform-gpu transition-colors duration-700`}
     />
     
     {[...Array(40)].map((_, i) => (
       <motion.div
         key={`star-${i}`}
-        className={`absolute rounded-full ${c.star} transition-colors duration-500`}
+        className={`absolute rounded-full ${c.star} transition-colors duration-700`}
         style={{
-          width: Math.random() * 3 + 1 + 'px',
-          height: Math.random() * 3 + 1 + 'px',
+          width: Math.random() * 4 + 2 + 'px',
+          height: Math.random() * 4 + 2 + 'px',
           left: Math.random() * 100 + 'vw',
           top: Math.random() * 100 + 'vh',
         }}
@@ -333,13 +347,13 @@ export default function App() {
 
   return (
     <div 
-      className={`h-[100dvh] w-screen ${c.bg} ${c.text} relative overflow-hidden flex flex-col font-sans selection:bg-emerald-500/30 transition-colors duration-500`}
+      className={`h-[100dvh] w-screen ${c.bg} ${c.text} relative overflow-hidden flex flex-col font-sans selection:bg-emerald-500/30 transition-colors duration-700`}
       onMouseMove={handleMouseMove}
     >
       <PremiumBackground mouseX={mouseX} mouseY={mouseY} c={c} />
 
       {/* Header */}
-      <header className={`relative z-20 border-b ${c.border} ${c.headerBg} backdrop-blur-3xl w-full transition-colors duration-500`}>
+      <header className={`relative z-20 border-b ${c.border} ${c.headerBg} backdrop-blur-3xl w-full transition-colors duration-700`}>
         <div className="w-full px-4 md:px-8 h-16 md:h-24 flex items-center justify-between">
           <motion.div 
             initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
@@ -407,7 +421,7 @@ export default function App() {
               initial="initial" animate="in" exit="out" variants={pageVariants}
               className="w-full h-full flex flex-col md:flex-row overflow-y-auto md:overflow-hidden absolute inset-0"
             >
-              <div className={`w-full md:w-1/2 min-h-[50vh] md:h-full flex flex-col justify-center p-8 md:p-16 lg:p-24 bg-gradient-to-b md:bg-gradient-to-r from-${theme === 'dark' ? 'slate-950/80' : 'slate-50/80'} to-transparent backdrop-blur-sm md:border-r border-b md:border-b-0 ${c.border} relative z-10 transition-colors duration-500`}>
+              <div className={`w-full md:w-1/2 min-h-[50vh] md:h-full flex flex-col justify-center p-8 md:p-16 lg:p-24 bg-gradient-to-b md:bg-gradient-to-r from-${theme === 'dark' ? 'slate-950/80' : 'slate-50/80'} to-transparent backdrop-blur-sm md:border-r border-b md:border-b-0 ${c.border} relative z-10 transition-colors duration-700`}>
                 <motion.div 
                   initial={{ scale: 0, rotate: -20 }} 
                   animate={{ scale: 1, rotate: 0, y: [0, -12, 0] }} 
@@ -424,15 +438,15 @@ export default function App() {
                   </div>
                 </motion.div>
 
-                <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className={`font-heading text-5xl md:text-6xl lg:text-8xl font-black ${c.textHeading} mb-4 md:mb-6 tracking-tighter leading-[1.1] text-center md:text-left drop-shadow-xl transition-colors duration-500`}>
+                <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className={`font-heading text-5xl md:text-6xl lg:text-8xl font-black ${c.textHeading} mb-4 md:mb-6 tracking-tighter leading-[1.1] text-center md:text-left drop-shadow-xl transition-colors duration-700`}>
                   Rural<br className="hidden md:block"/><span className="text-emerald-500 md:block drop-shadow-[0_0_15px_rgba(52,211,153,0.3)]">Intelligence.</span>
                 </motion.h1>
-                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className={`${c.textMuted} text-lg md:text-2xl font-medium max-w-xl leading-relaxed text-center md:text-left mx-auto md:mx-0 transition-colors duration-500`}>
+                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className={`${c.textMuted} text-lg md:text-2xl font-medium max-w-xl leading-relaxed text-center md:text-left mx-auto md:mx-0 transition-colors duration-700`}>
                   {t.subtitle}
                 </motion.p>
               </div>
               
-              <div className={`w-full md:w-1/2 min-h-[50vh] md:h-full flex flex-col justify-start md:justify-center p-8 md:p-16 lg:p-24 ${theme==='light' ? 'bg-white/40' : 'bg-white/5'} backdrop-blur-3xl relative z-10 transition-colors duration-500`}>
+              <div className={`w-full md:w-1/2 min-h-[50vh] md:h-full flex flex-col justify-start md:justify-center p-8 md:p-16 lg:p-24 ${theme==='light' ? 'bg-white/40' : 'bg-white/5'} backdrop-blur-3xl relative z-10 transition-colors duration-700`}>
                 <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="text-emerald-500 font-bold tracking-[0.3em] uppercase text-xs md:text-sm mb-8 md:mb-12 text-center md:text-left drop-shadow-md">{t.selectLanguage}</motion.h2>
                 <motion.div 
                   variants={containerVariants} initial="hidden" animate="show"
