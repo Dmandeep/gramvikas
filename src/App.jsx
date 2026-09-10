@@ -65,11 +65,10 @@ const THEMES = {
     inputBg: 'bg-slate-900/80',
     inputAreaBg: 'bg-slate-950/60',
     auroraBg: 'bg-[#020617]',
-    aurora1: 'bg-emerald-600/30',
-    aurora2: 'bg-blue-800/30',
-    aurora3: 'bg-teal-700/20',
-    grid: 'bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)]',
-    star: 'bg-white',
+    grid: 'bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)]',
+    accent: 'text-emerald-500',
+    pulse: 'border-emerald-500/20',
+    meteor: 'via-emerald-400',
     chatUserBg: 'bg-emerald-600/30',
     chatAiBg: 'bg-slate-900/90',
     prose: 'prose-invert',
@@ -87,11 +86,10 @@ const THEMES = {
     inputBg: 'bg-white/80',
     inputAreaBg: 'bg-white/60',
     auroraBg: 'bg-slate-100',
-    aurora1: 'bg-emerald-400/50',
-    aurora2: 'bg-cyan-400/50',
-    aurora3: 'bg-emerald-200/60',
     grid: 'bg-[linear-gradient(to_right,#00000008_1px,transparent_1px),linear-gradient(to_bottom,#00000008_1px,transparent_1px)]',
-    star: 'bg-emerald-500/50',
+    accent: 'text-emerald-600',
+    pulse: 'border-emerald-500/20',
+    meteor: 'via-emerald-500',
     chatUserBg: 'bg-emerald-50',
     chatAiBg: 'bg-white/90',
     prose: '',
@@ -110,13 +108,20 @@ const fileToGenerativePart = async (file) => {
   };
 };
 
-// --- INTERACTIVE & AURORA BACKGROUND ---
-const PremiumBackground = ({ mouseX, mouseY, c }) => (
+// --- HIGH-TECH INTELLIGENCE BACKGROUND ---
+const PremiumBackground = ({ mouseX, mouseY, c, theme }) => (
   <div className={`fixed inset-0 pointer-events-none overflow-hidden z-0 ${c.auroraBg} transition-colors duration-700`}>
-    <div className={`absolute inset-0 ${c.grid} bg-[size:48px_48px] transition-colors duration-700`}></div>
     
+    {/* 1. Scrolling Architectural Grid */}
+    <motion.div 
+      animate={{ y: [0, 48] }}
+      transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+      className={`absolute inset-[-100%] ${c.grid} bg-[size:48px_48px] opacity-70 transition-colors duration-700`}
+    />
+    
+    {/* 2. Interactive Spotlight (Mouse tracking) */}
     <motion.div
-      className="absolute top-0 left-0 w-[600px] h-[600px] bg-emerald-500/20 rounded-full blur-[150px] hidden md:block"
+      className="absolute top-0 left-0 w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-[100px] hidden md:block"
       style={{
         x: mouseX,
         y: mouseY,
@@ -125,65 +130,68 @@ const PremiumBackground = ({ mouseX, mouseY, c }) => (
       }}
     />
 
-    {/* EXTREMELY VISIBLE AURORA WAVES */}
-    <motion.div 
-      animate={{ 
-        x: ['-20vw', '20vw', '-20vw'],
-        y: ['-10vh', '10vh', '-10vh'],
-        rotate: [0, 10, -10, 0],
-        scale: [1, 1.2, 1]
-      }}
-      transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-      className={`absolute -top-[20%] left-[10%] w-[80vw] h-[50vh] rounded-[100%] ${c.aurora1} blur-[100px] md:blur-[140px] transform-gpu transition-colors duration-700`}
-    />
-    
-    <motion.div 
-      animate={{ 
-        x: ['20vw', '-20vw', '20vw'],
-        y: ['10vh', '-10vh', '10vh'],
-        rotate: [0, -15, 15, 0],
-        scale: [1.2, 1, 1.2]
-      }}
-      transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-      className={`absolute top-[30%] right-[10%] w-[70vw] h-[60vh] rounded-[100%] ${c.aurora2} blur-[100px] md:blur-[140px] transform-gpu transition-colors duration-700`}
-    />
+    {/* 3. AI Sonar / Radar Pulses */}
+    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100vw] h-[100vw] md:w-[60vw] md:h-[60vw]">
+      {[...Array(4)].map((_, i) => (
+        <motion.div
+          key={`pulse-${i}`}
+          className={`absolute inset-0 rounded-full border ${c.pulse}`}
+          initial={{ scale: 0.1, opacity: 1 }}
+          animate={{ scale: 1.5, opacity: 0 }}
+          transition={{ duration: 10, repeat: Infinity, delay: i * 2.5, ease: "linear" }}
+        />
+      ))}
+    </div>
 
-    <motion.div 
-      animate={{ 
-        x: ['-10vw', '10vw', '-10vw'],
-        y: ['40vh', '20vh', '40vh'],
-        rotate: [0, 20, -20, 0],
-        scale: [0.8, 1.1, 0.8]
-      }}
-      transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-      className={`absolute top-[20%] left-[20%] w-[50vw] h-[50vh] rounded-[100%] ${c.aurora3} blur-[100px] transform-gpu transition-colors duration-700`}
-    />
-    
-    {[...Array(40)].map((_, i) => (
+    {/* 4. Floating Tech Accents (Geometry) */}
+    {[...Array(25)].map((_, i) => (
       <motion.div
-        key={`star-${i}`}
-        className={`absolute rounded-full ${c.star} transition-colors duration-700`}
+        key={`accent-${i}`}
+        className={`absolute flex items-center justify-center font-mono text-sm md:text-base ${c.accent} font-bold opacity-40`}
         style={{
-          width: Math.random() * 4 + 2 + 'px',
-          height: Math.random() * 4 + 2 + 'px',
           left: Math.random() * 100 + 'vw',
           top: Math.random() * 100 + 'vh',
         }}
         animate={{
-          y: [0, -Math.random() * 500 - 200],
-          opacity: [0, Math.random() * 0.8 + 0.2, 0],
-          scale: [0, Math.random() * 2 + 0.5, 0]
+          y: [0, -50, 0],
+          rotate: [0, 180, 360],
+          opacity: [0.2, 0.8, 0.2]
         }}
         transition={{
-          duration: Math.random() * 20 + 10,
+          duration: Math.random() * 15 + 10,
           repeat: Infinity,
           ease: "linear",
-          delay: Math.random() * 15,
+          delay: Math.random() * 5,
+        }}
+      >
+        {i % 3 === 0 ? '+' : i % 3 === 1 ? '×' : '·'}
+      </motion.div>
+    ))}
+
+    {/* 5. High-Speed Data Meteors */}
+    {[...Array(6)].map((_, i) => (
+      <motion.div
+        key={`meteor-${i}`}
+        className={`absolute h-[1px] w-[100px] md:w-[200px] bg-gradient-to-r from-transparent ${c.meteor} to-transparent`}
+        style={{
+          top: Math.random() * 100 + 'vh',
+          left: '-20vw',
+          rotate: '25deg'
+        }}
+        animate={{
+          x: ['-20vw', '120vw'],
+          opacity: [0, 1, 0]
+        }}
+        transition={{
+          duration: Math.random() * 1.5 + 1.5,
+          repeat: Infinity,
+          ease: "linear",
+          delay: Math.random() * 8 + i * 2,
         }}
       />
     ))}
     
-    <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.04] mix-blend-overlay"></div>
+    <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] mix-blend-overlay"></div>
   </div>
 );
 
