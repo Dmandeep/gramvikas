@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Mic, MicOff, Upload, ChevronLeft, Home, Leaf, Bug, AlertCircle, FileText, TrendingUp, Volume2, Send, Loader2, Image as ImageIcon, X } from 'lucide-react';
+import { Mic, MicOff, Upload, ChevronLeft, Home, Leaf, Bug, AlertCircle, FileText, TrendingUp, Volume2, Send, Loader2, Image as ImageIcon, X, Sparkles } from 'lucide-react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
 
 // Initialize Gemini API
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || 'dummy_key');
@@ -17,36 +17,36 @@ const LANGUAGES = {
 
 const CONTENT = {
   en: {
-    title: 'Gramvikash AI Assistant',
-    subtitle: 'Empowering Rural India with Artificial Intelligence',
-    selectLanguage: 'Select Your Language',
-    selectOption: 'How can we help you today?',
-    cropAdvice: 'Crop Loss Reduction',
-    pestControl: 'Pest Control Measures',
-    emergency: 'Emergency Response',
-    plantDiagnosis: 'Plant Diagnosis',
-    govSchemes: 'Government Schemes',
-    marketInfo: 'Market Demand',
-    voice: 'Voice Input',
-    upload: 'Upload Plant Image',
-    ask: 'Type your question...',
-    back: 'Back to Menu',
+    title: 'Gramvikash AI',
+    subtitle: 'Empowering Rural India with Multimodal Intelligence',
+    selectLanguage: 'Select Language',
+    selectOption: 'How can we assist you today?',
+    cropAdvice: 'Crop Yield Optimization',
+    pestControl: 'Intelligent Pest Control',
+    emergency: 'Disaster Response',
+    plantDiagnosis: 'AI Plant Diagnosis',
+    govSchemes: 'Government Subsidies',
+    marketInfo: 'Market Intelligence',
+    voice: 'Voice',
+    upload: 'Upload Image',
+    ask: 'Ask anything...',
+    back: 'Return',
     home: 'Home'
   },
   hi: {
-    title: 'ग्रामविकास AI सहायक',
-    subtitle: 'कृत्रिम बुद्धिमत्ता के साथ ग्रामीण भारत का सशक्तिकरण',
-    selectLanguage: 'अपनी भाषा चुनें',
+    title: 'ग्रामविकास AI',
+    subtitle: 'मल्टीमोडल इंटेलिजेंस के साथ ग्रामीण भारत का सशक्तिकरण',
+    selectLanguage: 'भाषा चुनें',
     selectOption: 'आज हम आपकी कैसे मदद कर सकते हैं?',
-    cropAdvice: 'फसल नुकसान में कमी',
-    pestControl: 'कीट नियंत्रण उपाय',
-    emergency: 'आपातकालीन प्रतिक्रिया',
-    plantDiagnosis: 'पौधे का निदान',
-    govSchemes: 'सरकारी योजनाएं',
-    marketInfo: 'बाजार मांग',
-    voice: 'आवाज इनपुट',
-    upload: 'पौधे की तस्वीर अपलोड करें',
-    ask: 'अपना सवाल टाइप करें...',
+    cropAdvice: 'फसल उपज अनुकूलन',
+    pestControl: 'बुद्धिमान कीट नियंत्रण',
+    emergency: 'आपदा प्रतिक्रिया',
+    plantDiagnosis: 'AI पौधे का निदान',
+    govSchemes: 'सरकारी सब्सिडी',
+    marketInfo: 'बाजार खुफिया जानकारी',
+    voice: 'आवाज़',
+    upload: 'तस्वीर अपलोड करें',
+    ask: 'कुछ भी पूछें...',
     back: 'वापस जाएं',
     home: 'होम'
   }
@@ -63,9 +63,79 @@ const fileToGenerativePart = async (file) => {
   };
 };
 
+// --- INTERACTIVE & AURORA BACKGROUND ---
+const PremiumBackground = ({ mouseX, mouseY }) => (
+  <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 bg-[#020617]">
+    {/* Architectural Grid */}
+    <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:48px_48px]"></div>
+    
+    {/* Interactive Mouse Glow */}
+    <motion.div
+      className="absolute top-0 left-0 w-[600px] h-[600px] bg-emerald-500/20 rounded-full blur-[150px] hidden md:block"
+      style={{
+        x: mouseX,
+        y: mouseY,
+        translateX: '-50%',
+        translateY: '-50%',
+      }}
+    />
+
+    {/* Aurora Waves */}
+    <motion.div 
+      animate={{ 
+        x: ['-20vw', '20vw', '-20vw'],
+        y: ['-10vh', '10vh', '-10vh'],
+        rotate: [0, 10, -10, 0],
+        scale: [1, 1.2, 1]
+      }}
+      transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+      className="absolute -top-[20%] left-[10%] w-[80vw] h-[40vh] rounded-[100%] bg-emerald-600/30 blur-[120px] mix-blend-screen transform-gpu"
+    />
+    
+    <motion.div 
+      animate={{ 
+        x: ['20vw', '-20vw', '20vw'],
+        y: ['10vh', '-10vh', '10vh'],
+        rotate: [0, -15, 15, 0],
+        scale: [1.2, 1, 1.2]
+      }}
+      transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+      className="absolute top-[40%] right-[10%] w-[70vw] h-[50vh] rounded-[100%] bg-blue-800/30 blur-[130px] mix-blend-screen transform-gpu"
+    />
+    
+    {/* Floating Starfield / Particles */}
+    {[...Array(40)].map((_, i) => (
+      <motion.div
+        key={`star-${i}`}
+        className="absolute rounded-full bg-white"
+        style={{
+          width: Math.random() * 3 + 1 + 'px',
+          height: Math.random() * 3 + 1 + 'px',
+          left: Math.random() * 100 + 'vw',
+          top: Math.random() * 100 + 'vh',
+        }}
+        animate={{
+          y: [0, -Math.random() * 500 - 200],
+          opacity: [0, Math.random() * 0.8 + 0.2, 0],
+          scale: [0, Math.random() * 2 + 0.5, 0]
+        }}
+        transition={{
+          duration: Math.random() * 20 + 10,
+          repeat: Infinity,
+          ease: "linear",
+          delay: Math.random() * 15,
+        }}
+      />
+    ))}
+    
+    {/* Grain Overlay */}
+    <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.06] mix-blend-overlay"></div>
+  </div>
+);
+
 export default function App() {
   const [language, setLanguage] = useState(null);
-  const [currentScreen, setCurrentScreen] = useState('language'); // language, menu, detail
+  const [currentScreen, setCurrentScreen] = useState('language'); 
   const [selectedOption, setSelectedOption] = useState(null);
   
   const [isListening, setIsListening] = useState(false);
@@ -76,6 +146,24 @@ export default function App() {
   const [uploadedFile, setUploadedFile] = useState(null);
   const [uploadedImagePreview, setUploadedImagePreview] = useState(null);
   const fileInputRef = useRef(null);
+  
+  const chatEndRef = useRef(null);
+  
+  // Mouse tracking for background
+  const cursorX = useMotionValue(-1000);
+  const cursorY = useMotionValue(-1000);
+  const springConfig = { damping: 25, stiffness: 150 };
+  const mouseX = useSpring(cursorX, springConfig);
+  const mouseY = useSpring(cursorY, springConfig);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [aiResponse, isLoading]);
+
+  const handleMouseMove = (e) => {
+    cursorX.set(e.clientX);
+    cursorY.set(e.clientY);
+  };
 
   const t = language && CONTENT[language] ? CONTENT[language] : CONTENT.en;
 
@@ -144,7 +232,7 @@ export default function App() {
     if (!userInput.trim() && !uploadedFile) return;
 
     if (!import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_GEMINI_API_KEY === 'your_google_gemini_api_key_here') {
-      setAiResponse("System configuration error: VITE_GEMINI_API_KEY is not set. Please add a valid Google Gemini API key to your .env file.");
+      setAiResponse("System configuration error: VITE_GEMINI_API_KEY is not set.");
       return;
     }
 
@@ -185,90 +273,157 @@ export default function App() {
     }
   };
 
-  // Variants for animations
+  // --- ADVANCED SLIDING PAGE TRANSITIONS ---
   const pageVariants = {
-    initial: { opacity: 0, y: 20 },
-    in: { opacity: 1, y: 0 },
-    out: { opacity: 0, y: -20 }
+    initial: { opacity: 0, x: 150, scale: 0.95, filter: 'blur(10px)' },
+    in: { opacity: 1, x: 0, scale: 1, filter: 'blur(0px)', transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] } },
+    out: { opacity: 0, x: -150, scale: 0.95, filter: 'blur(10px)', transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } }
   };
-  const pageTransition = { type: "tween", ease: "anticipate", duration: 0.4 };
+
+  // Internal staggering for lists
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.08, delayChildren: 0.3 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, x: 50, scale: 0.9 },
+    show: { opacity: 1, x: 0, scale: 1, transition: { type: "spring", stiffness: 200, damping: 20 } }
+  };
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-emerald-200 selection:text-emerald-900 flex flex-col">
+    <div 
+      className="h-[100dvh] w-screen bg-slate-950 text-slate-50 relative overflow-hidden flex flex-col font-sans selection:bg-emerald-500/30"
+      onMouseMove={handleMouseMove}
+    >
+      
+      <PremiumBackground mouseX={mouseX} mouseY={mouseY} />
+
       {/* Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-emerald-600 font-bold text-xl tracking-tight">
-            <Leaf className="w-6 h-6" />
-            Gramvikash
-          </div>
-          {currentScreen !== 'language' && (
-            <button 
-              onClick={() => {
-                setLanguage(null);
-                setCurrentScreen('language');
-              }}
-              className="text-sm font-medium text-slate-500 hover:text-slate-900 flex items-center gap-1 transition-colors"
-            >
-              <Home className="w-4 h-4" /> {t.home}
-            </button>
-          )}
+      <header className="relative z-20 border-b border-white/10 bg-slate-950/20 backdrop-blur-3xl w-full">
+        <div className="w-full px-4 md:px-8 h-16 md:h-20 flex items-center justify-between">
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
+            className="flex items-center gap-3 md:gap-5 cursor-pointer"
+            onClick={() => {
+              setLanguage(null);
+              setCurrentScreen('language');
+            }}
+          >
+            <div className="relative">
+              <div className="absolute inset-0 bg-emerald-500 blur-lg opacity-40 animate-pulse"></div>
+              <img src="/logo.png" alt="Gramvikash Logo" className="w-10 h-10 md:w-12 md:h-12 rounded-xl object-cover relative z-10 border border-white/20 shadow-xl" />
+            </div>
+            <h1 className="font-heading font-extrabold text-xl md:text-2xl tracking-tighter bg-gradient-to-r from-emerald-300 via-teal-100 to-white bg-clip-text text-transparent">
+              Gramvikash
+            </h1>
+          </motion.div>
+          
+          <AnimatePresence>
+            {currentScreen !== 'language' && (
+              <motion.button 
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0 }}
+                whileHover={{ scale: 1.1, backgroundColor: 'rgba(255,255,255,0.1)' }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => {
+                  setLanguage(null);
+                  setCurrentScreen('language');
+                }}
+                className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 hover:text-white transition-colors backdrop-blur-xl"
+              >
+                <Home className="w-5 h-5 md:w-6 md:h-6" />
+              </motion.button>
+            )}
+          </AnimatePresence>
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col items-center p-4 sm:p-6 lg:p-8">
+      <main className="flex-1 relative z-10 w-full h-[calc(100dvh-4rem)] md:h-[calc(100dvh-5rem)] flex overflow-hidden">
         <AnimatePresence mode="wait">
+          
+          {/* LANGUAGE SCREEN */}
           {currentScreen === 'language' && (
             <motion.div 
               key="language"
-              initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}
-              className="w-full max-w-lg mt-12 sm:mt-24"
+              initial="initial" animate="in" exit="out" variants={pageVariants}
+              className="w-full h-full flex flex-col md:flex-row overflow-y-auto md:overflow-hidden absolute inset-0"
             >
-              <div className="bg-white rounded-3xl shadow-xl shadow-emerald-900/5 p-8 sm:p-12 text-center border border-slate-100">
-                <div className="mx-auto w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mb-6">
-                  <Leaf className="w-8 h-8 text-emerald-600" />
-                </div>
-                <h1 className="text-3xl font-extrabold text-slate-900 mb-3">{t.title}</h1>
-                <p className="text-slate-500 mb-10 text-lg">{t.subtitle}</p>
-                
-                <p className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">{t.selectLanguage}</p>
-                <div className="grid grid-cols-2 gap-3">
+              {/* Left Side: Branding */}
+              <div className="w-full md:w-1/2 min-h-[50vh] md:h-full flex flex-col justify-center p-8 md:p-16 lg:p-24 bg-gradient-to-b md:bg-gradient-to-r from-slate-950/80 to-transparent backdrop-blur-sm md:border-r border-b md:border-b-0 border-white/5 relative z-10">
+                <motion.div initial={{ scale: 0, rotate: -20 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", delay: 0.2 }} className="w-24 h-24 md:w-32 md:h-32 mb-8 md:mb-12 relative mx-auto md:mx-0">
+                  <div className="absolute inset-0 bg-emerald-500/40 rounded-[2rem] blur-2xl animate-pulse"></div>
+                  <img src="/logo.png" alt="Logo" className="w-full h-full object-cover rounded-[2rem] border border-white/20 relative z-10 shadow-2xl" />
+                </motion.div>
+                <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="font-heading text-5xl md:text-6xl lg:text-8xl font-black text-white mb-4 md:mb-6 tracking-tighter leading-[1.1] text-center md:text-left">
+                  Rural<br className="hidden md:block"/><span className="text-emerald-400 md:block">Intelligence.</span>
+                </motion.h1>
+                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="text-slate-400 text-lg md:text-2xl font-light max-w-xl leading-relaxed text-center md:text-left mx-auto md:mx-0">
+                  {t.subtitle}
+                </motion.p>
+              </div>
+              
+              {/* Right Side: Selection */}
+              <div className="w-full md:w-1/2 min-h-[50vh] md:h-full flex flex-col justify-start md:justify-center p-8 md:p-16 lg:p-24 bg-white/5 backdrop-blur-3xl relative z-10">
+                <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="text-emerald-400 font-bold tracking-[0.3em] uppercase text-xs md:text-sm mb-8 md:mb-12 text-center md:text-left">{t.selectLanguage}</motion.h2>
+                <motion.div 
+                  variants={containerVariants} initial="hidden" animate="show"
+                  className="grid grid-cols-2 md:grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6 w-full"
+                >
                   {Object.entries(LANGUAGES).map(([code, name]) => (
-                    <button
+                    <motion.button
                       key={code}
+                      variants={itemVariants}
+                      whileHover={{ scale: 1.05, backgroundColor: 'rgba(16, 185, 129, 0.2)' }}
+                      whileTap={{ scale: 0.95 }}
                       onClick={() => handleLanguageSelect(code)}
-                      className="p-4 border-2 border-slate-100 rounded-2xl hover:border-emerald-500 hover:bg-emerald-50 transition-all font-semibold text-slate-700 hover:text-emerald-700 active:scale-95"
+                      className="w-full py-6 md:py-8 flex items-center justify-center text-xl md:text-2xl lg:text-3xl font-heading font-bold border border-white/10 rounded-2xl md:rounded-[2rem] bg-slate-900/60 text-slate-200 hover:text-emerald-300 hover:border-emerald-500/50 transition-all shadow-xl backdrop-blur-md"
                     >
                       {name}
-                    </button>
+                    </motion.button>
                   ))}
-                </div>
+                </motion.div>
               </div>
             </motion.div>
           )}
 
+          {/* MENU SCREEN */}
           {currentScreen === 'menu' && (
             <motion.div 
               key="menu"
-              initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}
-              className="w-full max-w-4xl mt-6"
+              initial="initial" animate="in" exit="out" variants={pageVariants}
+              className="w-full h-full flex flex-col p-4 md:p-8 lg:p-12 overflow-y-auto custom-scrollbar absolute inset-0"
             >
-              <div className="text-center mb-10">
-                <h1 className="text-4xl font-extrabold text-slate-900 mb-3">{t.title}</h1>
-                <p className="text-slate-500 text-lg">{t.selectOption}</p>
+              <div className="mb-6 md:mb-10 text-center lg:text-left pt-2 md:pt-0">
+                <motion.h1 
+                  initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}
+                  className="font-heading text-3xl md:text-5xl font-black text-white tracking-tighter"
+                >
+                  {t.selectOption}
+                </motion.h1>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              <motion.div 
+                variants={containerVariants} initial="hidden" animate="show"
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 flex-1 w-full pb-8"
+              >
                 {[
-                  { key: 'cropAdvice', icon: Leaf, color: 'text-emerald-600', bg: 'bg-emerald-50', hover: 'hover:border-emerald-200' },
-                  { key: 'pestControl', icon: Bug, color: 'text-orange-600', bg: 'bg-orange-50', hover: 'hover:border-orange-200' },
-                  { key: 'emergency', icon: AlertCircle, color: 'text-red-600', bg: 'bg-red-50', hover: 'hover:border-red-200' },
-                  { key: 'plantDiagnosis', icon: Upload, color: 'text-blue-600', bg: 'bg-blue-50', hover: 'hover:border-blue-200' },
-                  { key: 'govSchemes', icon: FileText, color: 'text-purple-600', bg: 'bg-purple-50', hover: 'hover:border-purple-200' },
-                  { key: 'marketInfo', icon: TrendingUp, color: 'text-yellow-600', bg: 'bg-yellow-50', hover: 'hover:border-yellow-200' }
-                ].map(({ key, icon: Icon, color, bg, hover }) => (
-                  <button
+                  { key: 'cropAdvice', icon: Leaf, gradient: 'from-emerald-600/40 to-emerald-900/10', color: 'text-emerald-400', border: 'hover:border-emerald-500' },
+                  { key: 'pestControl', icon: Bug, gradient: 'from-orange-600/40 to-orange-900/10', color: 'text-orange-400', border: 'hover:border-orange-500' },
+                  { key: 'emergency', icon: AlertCircle, gradient: 'from-red-600/40 to-red-900/10', color: 'text-red-400', border: 'hover:border-red-500' },
+                  { key: 'plantDiagnosis', icon: Upload, gradient: 'from-blue-600/40 to-blue-900/10', color: 'text-blue-400', border: 'hover:border-blue-500' },
+                  { key: 'govSchemes', icon: FileText, gradient: 'from-purple-600/40 to-purple-900/10', color: 'text-purple-400', border: 'hover:border-purple-500' },
+                  { key: 'marketInfo', icon: TrendingUp, gradient: 'from-yellow-600/40 to-yellow-900/10', color: 'text-yellow-400', border: 'hover:border-yellow-500' }
+                ].map(({ key, icon: Icon, gradient, color, border }) => (
+                  <motion.button
                     key={key}
+                    variants={itemVariants}
+                    whileHover={{ scale: 1.02, y: -5 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => {
                       setSelectedOption(key);
                       setCurrentScreen('detail');
@@ -277,173 +432,166 @@ export default function App() {
                       setUploadedFile(null);
                       setUploadedImagePreview(null);
                     }}
-                    className={`group p-6 bg-white border border-slate-200 rounded-3xl shadow-sm hover:shadow-md transition-all text-left flex flex-col h-full ${hover} active:scale-[0.98]`}
+                    className={`group w-full min-h-[160px] md:min-h-[220px] lg:h-full bg-slate-900/60 backdrop-blur-2xl border border-white/10 rounded-3xl md:rounded-[3rem] shadow-2xl text-left flex flex-col justify-center p-6 md:p-10 ${border} transition-all relative overflow-hidden`}
                   >
-                    <div className={`w-14 h-14 rounded-2xl ${bg} flex items-center justify-center mb-4 transition-transform group-hover:scale-110`}>
-                      <Icon className={`w-7 h-7 ${color}`} />
+                    <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
+                    <div className={`w-14 h-14 md:w-20 md:h-20 rounded-2xl md:rounded-full bg-white/5 flex items-center justify-center mb-4 md:mb-6 border border-white/20 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500 relative z-10 backdrop-blur-xl shadow-lg`}>
+                      <Icon className={`w-7 h-7 md:w-10 md:h-10 ${color}`} />
                     </div>
-                    <h3 className="font-bold text-slate-800 text-lg mb-1">{t[key]}</h3>
-                    <p className="text-sm text-slate-500 mt-auto">Get AI assistance</p>
-                  </button>
+                    <h3 className="font-heading font-black text-white text-2xl md:text-3xl mb-2 md:mb-3 relative z-10 leading-tight group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-slate-400 transition-all">{t[key]}</h3>
+                    <p className="text-sm md:text-base text-slate-400 relative z-10 flex items-center gap-2 md:gap-3 group-hover:text-white transition-colors font-medium">
+                      <Sparkles className="w-4 h-4 md:w-5 md:h-5 group-hover:animate-pulse" /> Start Analysis
+                    </p>
+                  </motion.button>
                 ))}
-              </div>
+              </motion.div>
             </motion.div>
           )}
 
+          {/* DETAIL/CHAT SCREEN */}
           {currentScreen === 'detail' && (
             <motion.div 
               key="detail"
-              initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition}
-              className="w-full max-w-3xl mt-4"
+              initial="initial" animate="in" exit="out" variants={pageVariants}
+              className="w-full h-full flex flex-col bg-slate-950/20 backdrop-blur-sm absolute inset-0"
             >
-              <button
-                onClick={() => setCurrentScreen('menu')}
-                className="mb-6 flex items-center gap-2 text-slate-500 font-medium hover:text-slate-900 transition-colors"
-              >
-                <ChevronLeft className="w-5 h-5" /> {t.back}
-              </button>
+              <div className="px-4 md:px-8 py-4 md:py-6 border-b border-white/10 flex items-center justify-between bg-slate-900/50 backdrop-blur-xl z-20">
+                <motion.button
+                  whileHover={{ x: -10 }}
+                  onClick={() => setCurrentScreen('menu')}
+                  className="flex items-center gap-2 text-slate-300 font-bold hover:text-white transition-colors text-base md:text-lg bg-white/5 px-4 py-2 rounded-full border border-white/5"
+                >
+                  <ChevronLeft className="w-6 h-6 md:w-7 md:h-7" /> {t.back}
+                </motion.button>
+                <h2 className="font-heading text-lg md:text-2xl font-black text-emerald-400 tracking-tight truncate ml-4 drop-shadow-md">{t[selectedOption]}</h2>
+              </div>
 
-              <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 overflow-hidden border border-slate-100 flex flex-col h-[70vh] min-h-[500px]">
-                {/* Header */}
-                <div className="px-6 py-5 border-b border-slate-100 bg-slate-50/50 flex items-center gap-3">
-                  <div className="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center">
-                    {selectedOption === 'cropAdvice' && <Leaf className="w-5 h-5"/>}
-                    {selectedOption === 'pestControl' && <Bug className="w-5 h-5"/>}
-                    {selectedOption === 'emergency' && <AlertCircle className="w-5 h-5"/>}
-                    {selectedOption === 'plantDiagnosis' && <Upload className="w-5 h-5"/>}
-                    {selectedOption === 'govSchemes' && <FileText className="w-5 h-5"/>}
-                    {selectedOption === 'marketInfo' && <TrendingUp className="w-5 h-5"/>}
+              {/* Chat History Area */}
+              <div className="flex-1 overflow-y-auto p-4 md:p-10 flex flex-col gap-6 md:gap-10 custom-scrollbar relative z-10">
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="flex gap-3 md:gap-6 w-full">
+                  <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex-shrink-0 flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.4)]">
+                    <img src="/logo.png" alt="AI" className="w-6 h-6 md:w-8 md:h-8 object-cover rounded-lg" />
                   </div>
-                  <h2 className="text-xl font-bold text-slate-800">{t[selectedOption]}</h2>
-                </div>
-
-                {/* Chat Area */}
-                <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6">
-                  {/* Default greeting */}
-                  <div className="flex gap-4">
-                    <div className="w-8 h-8 rounded-full bg-emerald-600 flex-shrink-0 flex items-center justify-center">
-                      <Leaf className="w-4 h-4 text-white" />
-                    </div>
-                    <div className="bg-slate-100 rounded-2xl rounded-tl-sm p-4 text-slate-800 max-w-[85%]">
-                      Hello! How can I help you with {t[selectedOption]} today?
-                      {selectedOption === 'plantDiagnosis' && " Please upload a clear photo of the affected plant."}
-                    </div>
+                  <div className="bg-slate-900/80 border border-white/10 rounded-2xl md:rounded-[2rem] rounded-tl-sm md:rounded-tl-lg p-4 md:p-8 text-white max-w-[90%] md:max-w-[80%] text-base md:text-xl font-light leading-relaxed backdrop-blur-xl shadow-xl">
+                    Hello! How can I help you with <strong className="text-emerald-300 font-bold">{t[selectedOption]}</strong> today?
+                    {selectedOption === 'plantDiagnosis' && " Please upload a clear photo of the affected plant."}
                   </div>
+                </motion.div>
 
-                  {/* User Message Preview (if requested) */}
-                  {(userInput || uploadedImagePreview) && (
-                    <div className="flex gap-4 flex-row-reverse">
-                      <div className="w-8 h-8 rounded-full bg-blue-600 flex-shrink-0 flex items-center justify-center text-white font-bold text-xs">
-                        U
-                      </div>
-                      <div className="bg-blue-600 text-white rounded-2xl rounded-tr-sm p-4 max-w-[85%]">
-                        {uploadedImagePreview && (
-                          <img src={uploadedImagePreview} alt="Uploaded" className="rounded-xl mb-3 max-w-full max-h-48 object-cover border border-white/20" />
-                        )}
-                        {userInput && <p>{userInput}</p>}
-                      </div>
+                {(userInput || uploadedImagePreview) && (
+                  <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="flex gap-3 md:gap-6 flex-row-reverse w-full">
+                    <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-emerald-600 flex-shrink-0 flex items-center justify-center text-white font-black text-lg md:text-xl shadow-[0_0_20px_rgba(5,150,105,0.4)] border border-emerald-400/30">
+                      U
                     </div>
-                  )}
-
-                  {/* Loading indicator */}
-                  {isLoading && (
-                    <div className="flex gap-4">
-                      <div className="w-8 h-8 rounded-full bg-emerald-600 flex-shrink-0 flex items-center justify-center">
-                        <Leaf className="w-4 h-4 text-white" />
-                      </div>
-                      <div className="bg-slate-100 rounded-2xl rounded-tl-sm p-4 text-slate-500 flex items-center gap-2">
-                        <Loader2 className="w-4 h-4 animate-spin text-emerald-600" /> Processing...
-                      </div>
+                    <div className="bg-emerald-600/30 border border-emerald-500/50 text-white rounded-2xl md:rounded-[2rem] rounded-tr-sm md:rounded-tr-lg p-4 md:p-8 max-w-[90%] md:max-w-[80%] text-base md:text-xl font-light backdrop-blur-xl shadow-2xl">
+                      {uploadedImagePreview && (
+                        <img src={uploadedImagePreview} alt="Uploaded" className="rounded-xl md:rounded-2xl mb-3 md:mb-5 max-w-full max-h-48 md:max-h-80 object-cover border border-white/30 shadow-xl" />
+                      )}
+                      {userInput && <p>{userInput}</p>}
                     </div>
-                  )}
+                  </motion.div>
+                )}
 
-                  {/* AI Response */}
-                  {aiResponse && !isLoading && (
-                    <div className="flex gap-4">
-                      <div className="w-8 h-8 rounded-full bg-emerald-600 flex-shrink-0 flex items-center justify-center">
-                        <Leaf className="w-4 h-4 text-white" />
-                      </div>
-                      <div className="bg-slate-100 rounded-2xl rounded-tl-sm p-5 text-slate-800 max-w-[85%] relative group">
-                        <div className="prose prose-slate prose-sm" dangerouslySetInnerHTML={{ __html: aiResponse.replace(/\n/g, '<br/>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} />
-                        <button
-                          onClick={() => speakResponse(aiResponse)}
-                          className="absolute -right-12 top-0 p-2 bg-white text-emerald-600 rounded-full shadow-md hover:bg-emerald-50 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
-                          title="Read aloud"
-                        >
-                          <Volume2 className="w-5 h-5" />
-                        </button>
-                      </div>
+                {isLoading && (
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex gap-3 md:gap-6 w-full">
+                    <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex-shrink-0 flex items-center justify-center">
+                      <Loader2 className="w-5 h-5 md:w-7 md:h-7 animate-spin text-emerald-400" />
                     </div>
-                  )}
-                </div>
+                    <div className="bg-slate-900/80 border border-white/10 rounded-2xl md:rounded-[2rem] rounded-tl-sm md:rounded-tl-lg p-4 md:p-8 text-slate-300 text-base md:text-xl flex items-center backdrop-blur-xl shadow-xl">
+                      Analyzing agricultural data...
+                    </div>
+                  </motion.div>
+                )}
 
-                {/* Input Area */}
-                <div className="p-4 bg-white border-t border-slate-100">
-                  {selectedOption === 'plantDiagnosis' && !uploadedImagePreview && (
-                    <div className="mb-3 flex items-center gap-2">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="hidden"
-                        ref={fileInputRef}
-                      />
-                      <button 
-                        onClick={() => fileInputRef.current?.click()}
-                        className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-full text-sm font-medium hover:bg-emerald-100 transition-colors"
+                {aiResponse && !isLoading && (
+                  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex gap-3 md:gap-6 w-full">
+                    <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex-shrink-0 flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.4)]">
+                      <img src="/logo.png" alt="AI" className="w-6 h-6 md:w-8 md:h-8 object-cover rounded-lg" />
+                    </div>
+                    <div className="bg-slate-900/90 border border-white/20 rounded-2xl md:rounded-[2rem] rounded-tl-sm md:rounded-tl-lg p-5 md:p-10 text-white max-w-[95%] md:max-w-[85%] relative group shadow-2xl backdrop-blur-2xl">
+                      <div className="prose prose-invert prose-emerald max-w-none font-light leading-relaxed text-base md:text-xl" dangerouslySetInnerHTML={{ __html: aiResponse.replace(/\n/g, '<br/>').replace(/\*\*(.*?)\*\*/g, '<strong class="text-emerald-300 font-bold">$1</strong>') }} />
+                      <motion.button
+                        whileHover={{ scale: 1.1, rotate: -10 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => speakResponse(aiResponse)}
+                        className="absolute -right-3 -bottom-3 md:-right-5 md:-bottom-5 p-3 md:p-4 bg-emerald-600 text-white rounded-xl md:rounded-2xl shadow-xl hover:bg-emerald-500 transition-colors border border-emerald-400/50"
                       >
-                        <ImageIcon className="w-4 h-4" /> {t.upload}
-                      </button>
+                        <Volume2 className="w-5 h-5 md:w-6 md:h-6" />
+                      </motion.button>
                     </div>
-                  )}
+                  </motion.div>
+                )}
+                <div ref={chatEndRef} className="h-4 md:h-10 shrink-0" />
+              </div>
 
-                  {uploadedImagePreview && (
-                    <div className="mb-3 inline-flex items-center gap-3 bg-slate-50 p-2 pr-4 rounded-xl border border-slate-200">
-                      <div className="w-10 h-10 rounded-lg overflow-hidden border border-slate-200">
-                        <img src={uploadedImagePreview} alt="Preview" className="w-full h-full object-cover" />
-                      </div>
-                      <span className="text-sm text-slate-600 truncate max-w-[150px]">{uploadedFile?.name}</span>
-                      <button onClick={removeImage} className="text-slate-400 hover:text-red-500">
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  )}
-
-                  <div className="flex items-end gap-2 bg-slate-50 p-2 rounded-2xl border border-slate-200 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-100 transition-all">
-                    <button
-                      onClick={handleVoiceInput}
-                      className={`p-3 rounded-xl flex-shrink-0 transition-colors ${
-                        isListening
-                          ? 'bg-red-100 text-red-600 animate-pulse'
-                          : 'bg-white text-slate-500 hover:text-emerald-600 hover:bg-emerald-50'
-                      }`}
-                      title={t.voice}
-                    >
-                      {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-                    </button>
-                    
-                    <textarea
-                      value={userInput}
-                      onChange={(e) => setUserInput(e.target.value)}
-                      placeholder={t.ask}
-                      className="flex-1 max-h-32 min-h-[44px] bg-transparent border-0 focus:ring-0 resize-none p-3 text-slate-700 placeholder-slate-400 outline-none"
-                      rows={1}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          handleSubmit();
-                        }
-                      }}
+              {/* Input Dock - Sticks to bottom */}
+              <div className="p-4 md:p-8 bg-slate-950/60 border-t border-white/10 relative z-20 backdrop-blur-3xl w-full mt-auto pb-safe shadow-[0_-20px_40px_rgba(0,0,0,0.5)]">
+                {selectedOption === 'plantDiagnosis' && !uploadedImagePreview && (
+                  <div className="mb-3 md:mb-5">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                      ref={fileInputRef}
                     />
-                    
-                    <button
-                      onClick={handleSubmit}
-                      disabled={isLoading || (!userInput.trim() && !uploadedFile)}
-                      className="p-3 bg-emerald-600 text-white rounded-xl flex-shrink-0 hover:bg-emerald-700 transition-colors disabled:bg-slate-300 disabled:text-slate-500"
+                    <motion.button 
+                      whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                      onClick={() => fileInputRef.current?.click()}
+                      className="flex items-center justify-center md:justify-start gap-2 md:gap-3 w-full md:w-auto px-6 py-3 md:py-4 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-xl md:rounded-2xl text-sm md:text-lg font-bold hover:bg-emerald-500/20 transition-colors shadow-[0_0_15px_rgba(16,185,129,0.2)]"
                     >
-                      <Send className="w-5 h-5" />
-                    </button>
+                      <ImageIcon className="w-5 h-5 md:w-6 md:h-6" /> {t.upload}
+                    </motion.button>
                   </div>
+                )}
+
+                {uploadedImagePreview && (
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-3 md:mb-5 inline-flex items-center gap-3 md:gap-5 bg-white/5 p-2 pr-4 md:pr-5 rounded-2xl border border-white/10 shadow-xl max-w-full backdrop-blur-xl">
+                    <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl overflow-hidden border border-white/20 shrink-0">
+                      <img src={uploadedImagePreview} alt="Preview" className="w-full h-full object-cover" />
+                    </div>
+                    <span className="text-sm md:text-lg text-slate-300 font-medium truncate flex-1">{uploadedFile?.name}</span>
+                    <button onClick={removeImage} className="text-slate-500 hover:text-red-400 transition-colors p-2 bg-white/10 rounded-full shrink-0">
+                      <X className="w-5 h-5 md:w-6 md:h-6" />
+                    </button>
+                  </motion.div>
+                )}
+
+                <div className="flex items-end gap-2 md:gap-4 bg-slate-900/80 p-2 md:p-3 rounded-2xl md:rounded-[2rem] border border-white/10 focus-within:border-emerald-500/50 focus-within:bg-slate-900 transition-all shadow-2xl w-full">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                    onClick={handleVoiceInput}
+                    className={`p-3 md:p-5 rounded-xl md:rounded-[1.5rem] flex-shrink-0 transition-all ${
+                      isListening
+                        ? 'bg-red-500 text-white shadow-[0_0_30px_rgba(239,68,68,0.6)] animate-pulse border border-red-400'
+                        : 'bg-white/5 text-slate-400 hover:text-emerald-400 hover:bg-white/10 border border-white/5'
+                    }`}
+                  >
+                    {isListening ? <MicOff className="w-6 h-6 md:w-7 md:h-7" /> : <Mic className="w-6 h-6 md:w-7 md:h-7" />}
+                  </motion.button>
+                  
+                  <textarea
+                    value={userInput}
+                    onChange={(e) => setUserInput(e.target.value)}
+                    placeholder={t.ask}
+                    className="flex-1 max-h-32 md:max-h-60 min-h-[50px] md:min-h-[70px] bg-transparent border-0 focus:ring-0 resize-none p-3 md:p-5 text-white placeholder-slate-500 outline-none text-lg md:text-2xl font-light"
+                    rows={1}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSubmit();
+                      }
+                    }}
+                  />
+                  
+                  <motion.button
+                    whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                    onClick={handleSubmit}
+                    disabled={isLoading || (!userInput.trim() && !uploadedFile)}
+                    className="p-3 md:p-5 bg-emerald-600 text-white rounded-xl md:rounded-[1.5rem] flex-shrink-0 hover:bg-emerald-500 transition-all disabled:bg-white/5 disabled:text-slate-600 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(16,185,129,0.4)] disabled:shadow-none border border-emerald-400/50 disabled:border-white/5"
+                  >
+                    <Send className="w-6 h-6 md:w-7 md:h-7" />
+                  </motion.button>
                 </div>
               </div>
             </motion.div>

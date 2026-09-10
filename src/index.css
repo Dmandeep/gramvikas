@@ -1,9 +1,32 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Outfit", system-ui, sans-serif;
+  --font-heading: "Space Grotesk", system-ui, sans-serif;
+}
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-900;
+    @apply bg-slate-950 text-slate-50 antialiased overflow-x-hidden selection:bg-emerald-500/30;
+    font-family: var(--font-sans);
   }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
 }
