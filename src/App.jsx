@@ -154,14 +154,21 @@ const WeatherScreen = ({ c, theme, t, onBack }) => {
     
     try {
       // Step 1: Geocode the selected district to get precise coordinates
-      const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(district + ' ' + selectedState)}&count=1&language=en&format=json`);
+      const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(district)}&count=10&language=en&format=json`);
       const geoData = await geoRes.json();
       
-      if (!geoData.results || geoData.results.length === 0) {
-        throw new Error('Could not find location data for this district.');
+      // Find the result that matches both India and the selected state (or fallback to first match in India)
+      let bestMatch = null;
+      if (geoData.results && geoData.results.length > 0) {
+        bestMatch = geoData.results.find(r => r.country_code === 'IN' && r.admin1 === selectedState) 
+                 || geoData.results.find(r => r.country_code === 'IN');
+      }
+
+      if (!bestMatch) {
+        throw new Error(`Could not find GPS coordinates for ${district}.`);
       }
       
-      const { latitude: lat, longitude: lon } = geoData.results[0];
+      const { latitude: lat, longitude: lon } = bestMatch;
 
       // Step 2: Fetch weather using the exact coordinates
       const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,precipitation&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max&timezone=Asia/Kolkata&forecast_days=7`);
