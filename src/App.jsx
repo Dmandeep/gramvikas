@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Mic, MicOff, Upload, ChevronLeft, Home, Leaf, Bug, AlertCircle, FileText, TrendingUp, Volume2, Send, Loader2, Image as ImageIcon, X, Sparkles, Sun, Moon } from 'lucide-react';
+import { Mic, MicOff, Upload, ChevronLeft, Home, Leaf, Bug, AlertCircle, FileText, TrendingUp, Volume2, Send, Loader2, Image as ImageIcon, X, Sparkles, Sun, Moon, AudioLines } from 'lucide-react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
 
@@ -27,6 +27,7 @@ const CONTENT = {
     plantDiagnosis: 'AI Plant Diagnosis',
     govSchemes: 'Government Subsidies',
     marketInfo: 'Market Intelligence',
+    voiceAssistant: 'Universal Voice Assistant (Tap to Speak)',
     voice: 'Voice',
     upload: 'Upload Image',
     ask: 'Ask anything...',
@@ -44,6 +45,7 @@ const CONTENT = {
     plantDiagnosis: 'AI पौधे का निदान',
     govSchemes: 'सरकारी सब्सिडी',
     marketInfo: 'बाजार खुफिया जानकारी',
+    voiceAssistant: 'यूनिवर्सल वॉयस असिस्टेंट (बोलने के लिए टैप करें)',
     voice: 'आवाज़',
     upload: 'तस्वीर अपलोड करें',
     ask: 'कुछ भी पूछें...',
@@ -197,14 +199,22 @@ export default function App() {
     recognition.continuous = false;
     recognition.interimResults = true;
 
+    let finalTranscript = '';
+
     recognition.onstart = () => setIsListening(true);
-    recognition.onend = () => setIsListening(false);
+    recognition.onend = () => {
+      setIsListening(false);
+      // Auto Submit for illiterate / zero-click users
+      if (finalTranscript.trim() !== '') {
+        handleSubmitWithInput(finalTranscript);
+      }
+    };
     
     recognition.onresult = (event) => {
-      const transcript = Array.from(event.results)
+      finalTranscript = Array.from(event.results)
         .map(result => result[0].transcript)
         .join('');
-      setUserInput(transcript);
+      setUserInput(finalTranscript);
     };
 
     if (isListening) {
@@ -231,18 +241,25 @@ export default function App() {
   };
 
   const getPromptForOption = (option, input) => {
+    const context = `Context: Indian agriculture. Keep the answer highly conversational, exactly like a human voice assistant. Give the exact solution and actionable advice directly. Do NOT use markdown tables or complex formatting as this will be read aloud by TTS. Keep it brief and precise. Answer in ${LANGUAGES[language]}.`;
+    
     const prompts = {
-      cropAdvice: `Act as a senior agricultural expert. Provide practical, low-cost advice on reducing crop loss. User question: ${input}. Context: Indian agriculture. Give specific, actionable steps. Answer in ${LANGUAGES[language]}.`,
-      pestControl: `Act as a pest control specialist for crops. Provide management solutions (organic and conventional) for the issue: ${input}. Answer in ${LANGUAGES[language]}.`,
-      emergency: `Act as an agricultural disaster management expert. Provide emergency response guidance for: ${input}. Give immediate actionable steps to minimize damage. Answer in ${LANGUAGES[language]}.`,
-      govSchemes: `Act as an expert in Indian government agricultural schemes. Explain benefits and eligibility for: ${input}. Answer in ${LANGUAGES[language]}.`,
-      marketInfo: `Act as an agricultural market analyst in India. Provide insights on crop market demand, seasonal pricing, and best selling strategies for: ${input}. Answer in ${LANGUAGES[language]}.`
+      general: `Act as a universal agricultural assistant. Answer this query directly and provide an exact solution: ${input}. ${context}`,
+      cropAdvice: `Act as a senior agricultural expert. Provide a highly specific, exact solution for optimizing yield or reducing crop loss based on this query: ${input}. ${context}`,
+      pestControl: `Act as a pest control specialist for crops. Provide the exact organic or conventional management solution (including dosage if chemical) for this pest/issue: ${input}. ${context}`,
+      emergency: `Act as an agricultural disaster management expert. Provide immediate, exact emergency response steps to minimize damage for: ${input}. ${context}`,
+      govSchemes: `Act as an expert in Indian government agricultural schemes. Give the exact name of the relevant scheme and how to apply for: ${input}. ${context}`,
+      marketInfo: `Act as an agricultural market analyst in India. Provide direct insights on pricing or where to sell for: ${input}. ${context}`
     };
-    return prompts[option] || input;
+    return prompts[option] || prompts.general;
   };
 
-  const handleSubmit = async () => {
-    if (!userInput.trim() && !uploadedFile) return;
+  const handleSubmit = () => {
+    handleSubmitWithInput(userInput);
+  }
+
+  const handleSubmitWithInput = async (inputStr) => {
+    if (!inputStr.trim() && !uploadedFile) return;
 
     if (!import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_GEMINI_API_KEY === 'your_google_gemini_api_key_here') {
       setAiResponse("System configuration error: VITE_GEMINI_API_KEY is not set.");
@@ -252,9 +269,10 @@ export default function App() {
     setIsLoading(true);
     setAiResponse('');
     try {
+      // Upgraded to gemini-flash-latest to ensure no 404s and the best, fastest model is selected
+      const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
       if (selectedOption === 'plantDiagnosis' && uploadedFile) {
-        const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
-        const prompt = `Act as an expert plant pathologist. Analyze this plant image and identify any diseases, nutrient deficiencies, or pest damage. Provide: 1. Diagnosis 2. Possible causes 3. Treatment recommendations (organic and chemical). Respond in ${LANGUAGES[language]}. User context/question: ${userInput}`;
+        const prompt = `Act as an expert plant pathologist. Analyze this plant image and identify any diseases or pest damage. Provide: 1. Exact Diagnosis 2. Exact Treatment recommendations (organic and chemical). Keep it conversational and brief. Respond in ${LANGUAGES[language]}. User query: ${inputStr}`;
         const imagePart = await fileToGenerativePart(uploadedFile);
         
         const result = await model.generateContent([prompt, imagePart]);
@@ -262,8 +280,7 @@ export default function App() {
         setAiResponse(response.text());
         speakResponse(response.text());
       } else {
-        const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
-        const prompt = getPromptForOption(selectedOption, userInput);
+        const prompt = getPromptForOption(selectedOption, inputStr);
         const result = await model.generateContent(prompt);
         const response = await result.response;
         setAiResponse(response.text());
@@ -271,7 +288,8 @@ export default function App() {
       }
     } catch (error) {
       console.error(error);
-      setAiResponse('Sorry, an error occurred while generating the response. Please try again.');
+      setAiResponse(`API Error: ${error.message}. Please check your API key and internet connection.`);
+      speakResponse(`Sorry, I encountered an error connecting to the intelligence server.`);
     } finally {
       setIsLoading(false);
     }
@@ -307,7 +325,7 @@ export default function App() {
       className={`h-[100dvh] w-screen ${c.bg} ${c.text} relative overflow-hidden flex flex-col font-sans selection:bg-emerald-500/30 transition-colors duration-700`}
       onMouseMove={handleMouseMove}
     >
-      <PremiumBackground mouseX={mouseX} mouseY={mouseY} c={c} />
+      <PremiumBackground mouseX={mouseX} mouseY={mouseY} c={c} theme={theme} />
 
       {/* Header */}
       <header className={`relative z-20 border-b ${c.border} ${c.headerBg} backdrop-blur-3xl w-full transition-colors duration-700`}>
@@ -442,6 +460,35 @@ export default function App() {
                 </motion.h1>
               </div>
 
+              {/* UNIVERSAL VOICE ASSISTANT HERO BUTTON */}
+              <motion.div variants={containerVariants} initial="hidden" animate="show" className="w-full mb-6 md:mb-10">
+                 <motion.button
+                    variants={itemVariants}
+                    whileHover={{ scale: 1.02, y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      setSelectedOption('general');
+                      setCurrentScreen('detail');
+                      setUserInput('');
+                      setAiResponse('');
+                      setUploadedFile(null);
+                      setUploadedImagePreview(null);
+                      // Auto start listening on click for extreme accessibility
+                      setTimeout(handleVoiceInput, 500); 
+                    }}
+                    className={`group w-full bg-gradient-to-r from-emerald-500 to-teal-500 border border-emerald-400 rounded-3xl md:rounded-[3rem] shadow-[0_0_40px_rgba(16,185,129,0.3)] text-left flex flex-col md:flex-row items-center justify-center p-8 md:p-12 transition-all relative overflow-hidden`}
+                  >
+                    <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div className="w-16 h-16 md:w-24 md:h-24 rounded-full bg-white flex items-center justify-center mb-4 md:mb-0 md:mr-8 border-4 border-emerald-200 group-hover:scale-110 group-hover:shadow-[0_0_30px_rgba(255,255,255,0.6)] transition-all duration-500">
+                      <AudioLines className="w-8 h-8 md:w-12 md:h-12 text-emerald-600 animate-pulse" />
+                    </div>
+                    <div className="text-center md:text-left">
+                      <h3 className="font-heading font-black text-white text-2xl md:text-4xl mb-2 drop-shadow-md">{t.voiceAssistant}</h3>
+                      <p className="text-emerald-100 font-semibold text-sm md:text-lg">No typing required. Just talk and I will answer directly.</p>
+                    </div>
+                  </motion.button>
+              </motion.div>
+
               <motion.div 
                 variants={containerVariants} initial="hidden" animate="show"
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 flex-1 w-full pb-8"
@@ -498,7 +545,9 @@ export default function App() {
                 >
                   <ChevronLeft className="w-6 h-6 md:w-7 md:h-7" /> {t.back}
                 </motion.button>
-                <h2 className="font-heading text-lg md:text-2xl font-black text-emerald-500 tracking-tight truncate ml-4 drop-shadow-sm">{t[selectedOption]}</h2>
+                <h2 className="font-heading text-lg md:text-2xl font-black text-emerald-500 tracking-tight truncate ml-4 drop-shadow-sm">
+                  {selectedOption === 'general' ? t.voiceAssistant : t[selectedOption]}
+                </h2>
               </div>
 
               {/* Chat History Area */}
@@ -508,7 +557,7 @@ export default function App() {
                     <img src="/logo.png" alt="AI" className="w-full h-full object-cover rounded-[10px] md:rounded-[14px] brightness-110 contrast-125" />
                   </div>
                   <div className={`${c.chatAiBg} border ${c.border} rounded-2xl md:rounded-[2rem] rounded-tl-sm md:rounded-tl-lg p-4 md:p-8 ${c.textHeading} max-w-[90%] md:max-w-[80%] text-base md:text-xl font-medium leading-relaxed backdrop-blur-xl shadow-xl`}>
-                    Hello! How can I help you with <strong className="text-emerald-500 font-bold">{t[selectedOption]}</strong> today?
+                    Hello! {selectedOption === 'general' ? 'I am listening. Just speak and I will give you the exact solution.' : `How can I help you with ${t[selectedOption]} today?`}
                     {selectedOption === 'plantDiagnosis' && " Please upload a clear photo of the affected plant."}
                   </div>
                 </motion.div>
@@ -533,7 +582,7 @@ export default function App() {
                        <Loader2 className="w-5 h-5 md:w-7 md:h-7 animate-spin text-slate-900" />
                     </div>
                     <div className={`${c.chatAiBg} border ${c.border} rounded-2xl md:rounded-[2rem] rounded-tl-sm md:rounded-tl-lg p-4 md:p-8 ${c.textMuted} text-base md:text-xl flex items-center backdrop-blur-xl shadow-xl font-medium`}>
-                      Analyzing agricultural data...
+                      Generating exact solution...
                     </div>
                   </motion.div>
                 )}
@@ -602,7 +651,7 @@ export default function App() {
                   <textarea
                     value={userInput}
                     onChange={(e) => setUserInput(e.target.value)}
-                    placeholder={t.ask}
+                    placeholder={selectedOption === 'general' ? 'Speak your problem directly...' : t.ask}
                     className={`flex-1 max-h-32 md:max-h-60 min-h-[50px] md:min-h-[70px] bg-transparent border-0 focus:ring-0 resize-none p-3 md:p-5 ${c.textHeading} placeholder-${theme==='dark'?'slate-500':'slate-400'} outline-none text-lg md:text-2xl font-medium`}
                     rows={1}
                     onKeyDown={(e) => {
