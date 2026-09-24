@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Mic, MicOff, Upload, ChevronLeft, Home, Leaf, Bug, AlertCircle, FileText, TrendingUp, Volume2, Send, Loader2, Image as ImageIcon, X, Sparkles, Sun, Moon, AudioLines, Sprout, CloudRain, MapPin, ThermometerSun, Wind, Droplets, ChevronDown, IndianRupee, Search } from 'lucide-react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
+import { STATE_DISTRICTS } from './districts';
 
 const OBF = ['AQ.Ab8RN6LI', 'MENo8GgByCo', 'fz4WXyQMQTX', 'JSR9NPSfU9JuucScfO1g'];
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || OBF.join('');
@@ -136,48 +137,41 @@ const PremiumBackground = ({ mouseX, mouseY, c, theme }) => (
 
 // ===== WEATHER ALERTS SCREEN =====
 const WeatherScreen = ({ c, theme, t, onBack }) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
+  const [selectedState, setSelectedState] = useState('');
+  const [selectedDistrict, setSelectedDistrict] = useState('');
   const [selectedLocation, setSelectedLocation] = useState(null);
   
   const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [searchLoading, setSearchLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Debounced search for locations
-  useEffect(() => {
-    if (searchQuery.length < 3) {
-      setSearchResults([]);
-      return;
-    }
-    const timeoutId = setTimeout(async () => {
-      setSearchLoading(true);
-      try {
-        const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(searchQuery)}&count=5&language=en&format=json`);
-        const data = await res.json();
-        // Filter to keep only Indian locations to stay relevant to Gramvikash
-        setSearchResults((data.results || []).filter(r => r.country_code === 'IN'));
-      } catch (e) {
-        console.error("Geocoding error", e);
-      } finally {
-        setSearchLoading(false);
-      }
-    }, 500);
-    return () => clearTimeout(timeoutId);
-  }, [searchQuery]);
-
-  const fetchWeather = async (lat, lon, name, admin1) => {
+  const handleDistrictChange = async (district) => {
+    setSelectedDistrict(district);
+    if (!district || !selectedState) return;
+    
     setLoading(true); setError(''); setWeather(null);
-    setSelectedLocation(`${name}${admin1 ? `, ${admin1}` : ''}`);
-    setSearchQuery('');
-    setSearchResults([]);
+    setSelectedLocation(`${district}, ${selectedState}`);
+    
     try {
+      // Step 1: Geocode the selected district to get precise coordinates
+      const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(district + ' ' + selectedState)}&count=1&language=en&format=json`);
+      const geoData = await geoRes.json();
+      
+      if (!geoData.results || geoData.results.length === 0) {
+        throw new Error('Could not find location data for this district.');
+      }
+      
+      const { latitude: lat, longitude: lon } = geoData.results[0];
+
+      // Step 2: Fetch weather using the exact coordinates
       const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,precipitation&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max&timezone=Asia/Kolkata&forecast_days=7`);
       if (!res.ok) throw new Error('Weather service unavailable');
       setWeather(await res.json());
-    } catch (e) { setError(e.message); }
-    finally { setLoading(false); }
+    } catch (e) { 
+      setError(e.message); 
+    } finally { 
+      setLoading(false); 
+    }
   };
 
   const getAlerts = () => {
@@ -209,39 +203,24 @@ const WeatherScreen = ({ c, theme, t, onBack }) => {
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 md:p-10 space-y-6 relative z-10">
-        {/* District/Village Search Box */}
-        <div className={`${c.cardBg} backdrop-blur-2xl border ${c.border} rounded-3xl p-6 md:p-8 shadow-2xl relative`}>
-          <label className={`block text-sm font-bold ${c.textMuted} mb-3 uppercase tracking-wider`}><MapPin className="w-4 h-4 inline mr-2" />Search District or Village</label>
-          <div className="relative">
-            <input 
-              type="text" 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="e.g. Pune, Solapur, Baramati..."
-              className={`w-full p-4 pl-12 rounded-2xl ${c.inputBg} ${c.textHeading} border ${c.border} text-lg font-semibold focus:border-emerald-500 outline-none transition-all shadow-inner`}
-            />
-            <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${c.textMuted}`} />
-            {searchLoading && <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 animate-spin text-emerald-500" />}
+        {/* Dual Dropdown Selector */}
+        <div className={`${c.cardBg} backdrop-blur-2xl border ${c.border} rounded-3xl p-6 md:p-8 shadow-2xl flex flex-col md:flex-row gap-4`}>
+          <div className="flex-1">
+            <label className={`block text-sm font-bold ${c.textMuted} mb-3 uppercase tracking-wider`}><MapPin className="w-4 h-4 inline mr-2" />Select State</label>
+            <select value={selectedState} onChange={(e) => { setSelectedState(e.target.value); setSelectedDistrict(''); setWeather(null); }}
+              className={`w-full p-4 rounded-2xl ${c.selectBg} ${c.selectText} border ${c.border} text-lg font-semibold focus:border-emerald-500 outline-none transition-all`}>
+              <option value="">-- Choose State --</option>
+              {Object.keys(STATE_DISTRICTS).map(r => <option key={r} value={r}>{r}</option>)}
+            </select>
           </div>
-
-          {/* Autocomplete Dropdown */}
-          <AnimatePresence>
-            {searchResults.length > 0 && (
-              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-                className={`absolute left-6 right-6 md:left-8 md:right-8 mt-2 ${c.cardBg} backdrop-blur-3xl border ${c.border} rounded-2xl shadow-2xl overflow-hidden z-50`}>
-                {searchResults.map((res, i) => (
-                  <button key={i} onClick={() => fetchWeather(res.latitude, res.longitude, res.name, res.admin1)}
-                    className={`w-full text-left p-4 hover:${c.hoverBg} border-b ${c.border} last:border-0 flex items-center justify-between transition-colors`}>
-                    <div>
-                      <p className={`font-bold text-lg ${c.textHeading}`}>{res.name}</p>
-                      <p className={`text-sm ${c.textMuted}`}>{res.admin2 ? `${res.admin2}, ` : ''}{res.admin1}</p>
-                    </div>
-                    <span className="text-xs font-bold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded">Select</span>
-                  </button>
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <div className="flex-1">
+            <label className={`block text-sm font-bold ${c.textMuted} mb-3 uppercase tracking-wider`}><MapPin className="w-4 h-4 inline mr-2" />Select District</label>
+            <select value={selectedDistrict} onChange={(e) => handleDistrictChange(e.target.value)} disabled={!selectedState}
+              className={`w-full p-4 rounded-2xl ${c.selectBg} ${c.selectText} border ${c.border} text-lg font-semibold focus:border-emerald-500 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed`}>
+              <option value="">-- Choose District --</option>
+              {selectedState && STATE_DISTRICTS[selectedState].map(d => <option key={d} value={d}>{d}</option>)}
+            </select>
+          </div>
         </div>
 
         {loading && <div className="flex justify-center py-10"><Loader2 className="w-10 h-10 animate-spin text-emerald-500" /></div>}
