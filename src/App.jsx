@@ -436,7 +436,7 @@ Keep the answer highly conversational, exactly like a human voice assistant. Do 
                 </motion.div>
 
                 <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className={`font-heading text-4xl md:text-5xl lg:text-7xl font-black ${c.textHeading} mb-4 tracking-tighter leading-[1.1] text-center md:text-left drop-shadow-xl transition-colors duration-700`}>
-                  Rural<br className="hidden md:block"/><span className="text-emerald-500 md:block drop-shadow-[0_0_15px_rgba(52,211,153,0.3)]">Intelligence.</span>
+                  Gramvikash<br className="hidden md:block"/><span className="text-emerald-500 md:block drop-shadow-[0_0_15px_rgba(52,211,153,0.3)]">AI.</span>
                 </motion.h1>
                 <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className={`${c.textMuted} text-base md:text-xl font-medium max-w-sm leading-relaxed text-center md:text-left mx-auto md:mx-0 transition-colors duration-700`}>
                   Empowering rural India with Multimodal AI support.
