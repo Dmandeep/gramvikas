@@ -136,17 +136,44 @@ const PremiumBackground = ({ mouseX, mouseY, c, theme }) => (
 
 // ===== WEATHER ALERTS SCREEN =====
 const WeatherScreen = ({ c, theme, t, onBack }) => {
-  const [selectedRegion, setSelectedRegion] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [selectedLocation, setSelectedLocation] = useState(null);
+  
   const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const fetchWeather = async (region) => {
-    if (!region) return;
+  // Debounced search for locations
+  useEffect(() => {
+    if (searchQuery.length < 3) {
+      setSearchResults([]);
+      return;
+    }
+    const timeoutId = setTimeout(async () => {
+      setSearchLoading(true);
+      try {
+        const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(searchQuery)}&count=5&language=en&format=json`);
+        const data = await res.json();
+        // Filter to keep only Indian locations to stay relevant to Gramvikash
+        setSearchResults((data.results || []).filter(r => r.country_code === 'IN'));
+      } catch (e) {
+        console.error("Geocoding error", e);
+      } finally {
+        setSearchLoading(false);
+      }
+    }, 500);
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
+
+  const fetchWeather = async (lat, lon, name, admin1) => {
     setLoading(true); setError(''); setWeather(null);
+    setSelectedLocation(`${name}${admin1 ? `, ${admin1}` : ''}`);
+    setSearchQuery('');
+    setSearchResults([]);
     try {
-      const coords = INDIAN_REGIONS[region];
-      const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,precipitation&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max&timezone=Asia/Kolkata&forecast_days=7`);
+      const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,precipitation&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max&timezone=Asia/Kolkata&forecast_days=7`);
       if (!res.ok) throw new Error('Weather service unavailable');
       setWeather(await res.json());
     } catch (e) { setError(e.message); }
@@ -182,14 +209,39 @@ const WeatherScreen = ({ c, theme, t, onBack }) => {
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 md:p-10 space-y-6 relative z-10">
-        {/* Region Selector */}
-        <div className={`${c.cardBg} backdrop-blur-2xl border ${c.border} rounded-3xl p-6 md:p-8 shadow-2xl`}>
-          <label className={`block text-sm font-bold ${c.textMuted} mb-3 uppercase tracking-wider`}><MapPin className="w-4 h-4 inline mr-2" />Select Your Region</label>
-          <select value={selectedRegion} onChange={(e) => { setSelectedRegion(e.target.value); fetchWeather(e.target.value); }}
-            className={`w-full p-4 rounded-2xl ${c.selectBg} ${c.selectText} border ${c.border} text-lg font-semibold focus:border-emerald-500 outline-none transition-all`}>
-            <option value="">-- Choose State --</option>
-            {Object.keys(INDIAN_REGIONS).map(r => <option key={r} value={r}>{r}</option>)}
-          </select>
+        {/* District/Village Search Box */}
+        <div className={`${c.cardBg} backdrop-blur-2xl border ${c.border} rounded-3xl p-6 md:p-8 shadow-2xl relative`}>
+          <label className={`block text-sm font-bold ${c.textMuted} mb-3 uppercase tracking-wider`}><MapPin className="w-4 h-4 inline mr-2" />Search District or Village</label>
+          <div className="relative">
+            <input 
+              type="text" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="e.g. Pune, Solapur, Baramati..."
+              className={`w-full p-4 pl-12 rounded-2xl ${c.inputBg} ${c.textHeading} border ${c.border} text-lg font-semibold focus:border-emerald-500 outline-none transition-all shadow-inner`}
+            />
+            <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${c.textMuted}`} />
+            {searchLoading && <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 animate-spin text-emerald-500" />}
+          </div>
+
+          {/* Autocomplete Dropdown */}
+          <AnimatePresence>
+            {searchResults.length > 0 && (
+              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                className={`absolute left-6 right-6 md:left-8 md:right-8 mt-2 ${c.cardBg} backdrop-blur-3xl border ${c.border} rounded-2xl shadow-2xl overflow-hidden z-50`}>
+                {searchResults.map((res, i) => (
+                  <button key={i} onClick={() => fetchWeather(res.latitude, res.longitude, res.name, res.admin1)}
+                    className={`w-full text-left p-4 hover:${c.hoverBg} border-b ${c.border} last:border-0 flex items-center justify-between transition-colors`}>
+                    <div>
+                      <p className={`font-bold text-lg ${c.textHeading}`}>{res.name}</p>
+                      <p className={`text-sm ${c.textMuted}`}>{res.admin2 ? `${res.admin2}, ` : ''}{res.admin1}</p>
+                    </div>
+                    <span className="text-xs font-bold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded">Select</span>
+                  </button>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {loading && <div className="flex justify-center py-10"><Loader2 className="w-10 h-10 animate-spin text-emerald-500" /></div>}
@@ -200,7 +252,7 @@ const WeatherScreen = ({ c, theme, t, onBack }) => {
             {/* Current Weather */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
               className={`${c.cardBg} backdrop-blur-2xl border ${c.border} rounded-3xl p-6 md:p-8 shadow-2xl`}>
-              <h3 className={`font-heading text-xl md:text-2xl font-black ${c.textHeading} mb-4`}>Current Weather — {selectedRegion}</h3>
+              <h3 className={`font-heading text-xl md:text-2xl font-black ${c.textHeading} mb-4`}>Current Weather — {selectedLocation}</h3>
               <div className="flex flex-wrap items-center gap-6 md:gap-10">
                 <div className="text-6xl md:text-8xl">{currentWeather.icon}</div>
                 <div>
