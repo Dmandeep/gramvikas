@@ -11,6 +11,9 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['logo.png'],
+      devOptions: {
+        enabled: true
+      },
       manifest: {
         name: 'Gramvikash AI',
         short_name: 'Gramvikash',

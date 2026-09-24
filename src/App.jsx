@@ -4,6 +4,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
 
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || 'dummy_key');
+const LOGO_PATH = `${import.meta.env.BASE_URL}logo.png`;
 
 const LANGUAGES = {
   en: 'English', hi: 'हिंदी (Hindi)', bn: 'বাংলা (Bengali)', mr: 'मराठी (Marathi)',
@@ -503,7 +504,7 @@ export default function App() {
             <motion.div animate={{ y: [0, -4, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }} className="relative">
               <div className="absolute inset-0 bg-emerald-400 blur-xl opacity-60 animate-pulse"></div>
               <div className="relative z-10 p-[2px] rounded-xl md:rounded-[1.25rem] bg-gradient-to-tr from-emerald-400 via-teal-200 to-white shadow-[0_0_20px_rgba(52,211,153,0.5)] overflow-hidden">
-                <img src="/logo.png" alt="Logo" className="w-10 h-10 md:w-14 md:h-14 rounded-[10px] md:rounded-xl object-cover brightness-110 contrast-125" />
+                <img src={LOGO_PATH} alt="Logo" className="w-10 h-10 md:w-14 md:h-14 rounded-[10px] md:rounded-xl object-cover brightness-110 contrast-125" />
               </div>
             </motion.div>
             <h1 className="font-heading font-black text-2xl md:text-3xl tracking-tighter bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent">Gramvikash</h1>
@@ -539,7 +540,7 @@ export default function App() {
                   className="w-24 h-24 md:w-32 md:h-32 mb-6 md:mb-10 relative mx-auto md:mx-0">
                   <div className="absolute inset-0 bg-emerald-400/70 rounded-[2rem] blur-3xl animate-pulse"></div>
                   <div className="relative z-10 p-[3px] rounded-[2rem] bg-gradient-to-tr from-emerald-400 via-teal-100 to-white shadow-[0_0_40px_rgba(52,211,153,0.7)]">
-                    <img src="/logo.png" alt="Logo" className="w-full h-full object-cover rounded-[1.75rem] brightness-110 contrast-125" />
+                    <img src={LOGO_PATH} alt="Logo" className="w-full h-full object-cover rounded-[1.75rem] brightness-110 contrast-125" />
                   </div>
                 </motion.div>
                 <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
@@ -646,7 +647,7 @@ export default function App() {
               <div className="flex-1 overflow-y-auto p-4 md:p-10 flex flex-col gap-6 md:gap-10 relative z-10">
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="flex gap-3 md:gap-6 w-full">
                   <div className="relative w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex-shrink-0 flex items-center justify-center p-[2px] bg-gradient-to-tr from-emerald-400 to-teal-100 shadow-lg">
-                    <img src="/logo.png" alt="AI" className="w-full h-full object-cover rounded-[10px] md:rounded-[14px] brightness-110 contrast-125" />
+                    <img src={LOGO_PATH} alt="AI" className="w-full h-full object-cover rounded-[10px] md:rounded-[14px] brightness-110 contrast-125" />
                   </div>
                   <div className={`${c.chatAiBg} border ${c.border} rounded-2xl md:rounded-[2rem] rounded-tl-sm p-4 md:p-8 ${c.textHeading} max-w-[90%] md:max-w-[80%] text-base md:text-xl font-medium leading-relaxed backdrop-blur-xl shadow-xl`}>
                     Hello! {selectedOption === 'general' ? 'I am listening. Just speak and I will give you the exact solution.' : `How can I help you with ${t[selectedOption]} today?`}
@@ -677,7 +678,7 @@ export default function App() {
                 {aiResponse && !isLoading && (
                   <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex gap-3 md:gap-6 w-full">
                     <div className="relative w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex-shrink-0 flex items-center justify-center p-[2px] bg-gradient-to-tr from-emerald-400 to-teal-100 shadow-lg">
-                      <img src="/logo.png" alt="AI" className="w-full h-full object-cover rounded-[10px] md:rounded-[14px] brightness-110 contrast-125" />
+                      <img src={LOGO_PATH} alt="AI" className="w-full h-full object-cover rounded-[10px] md:rounded-[14px] brightness-110 contrast-125" />
                     </div>
                     <div className={`${c.chatAiBg} border ${c.border} rounded-2xl md:rounded-[2rem] rounded-tl-sm p-5 md:p-10 ${c.textHeading} max-w-[95%] md:max-w-[85%] relative group shadow-xl backdrop-blur-2xl`}>
                       <div className={`prose ${c.prose} prose-emerald max-w-none font-medium leading-relaxed text-base md:text-xl`} dangerouslySetInnerHTML={{ __html: aiResponse.replace(/\n/g, '<br/>').replace(/\*\*(.*?)\*\*/g, '<strong class="text-emerald-500 font-bold">$1</strong>') }} />
