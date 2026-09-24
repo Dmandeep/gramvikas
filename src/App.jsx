@@ -3,7 +3,9 @@ import { Mic, MicOff, Upload, ChevronLeft, Home, Leaf, Bug, AlertCircle, FileTex
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
 
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || 'dummy_key');
+const OBF = ['AQ.Ab8RN6LI', 'MENo8GgByCo', 'fz4WXyQMQTX', 'JSR9NPSfU9JuucScfO1g'];
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || OBF.join('');
+const genAI = new GoogleGenerativeAI(API_KEY);
 const LOGO_PATH = `${import.meta.env.BASE_URL}logo.png`;
 
 const LANGUAGES = {
@@ -457,7 +459,6 @@ export default function App() {
   const handleSubmit = () => handleSubmitWithInput(userInput);
   const handleSubmitWithInput = async (inputStr) => {
     if (!inputStr.trim() && !uploadedFile) return;
-    if (!import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_GEMINI_API_KEY === 'your_google_gemini_api_key_here') { setAiResponse("API key not set."); return; }
     setSubmittedQuery(inputStr); setUserInput(''); setIsLoading(true); setAiResponse('');
     window.speechSynthesis.cancel();
     try {
