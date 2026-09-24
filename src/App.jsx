@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Mic, MicOff, Upload, ChevronLeft, Home, Leaf, Bug, AlertCircle, FileText, TrendingUp, Volume2, Send, Loader2, Image as ImageIcon, X, Sparkles, Sun, Moon, AudioLines } from 'lucide-react';
+import { Mic, MicOff, Upload, ChevronLeft, Home, Leaf, Bug, AlertCircle, FileText, TrendingUp, Volume2, Send, Loader2, Image as ImageIcon, X, Sparkles, Sun, Moon, AudioLines, Sprout } from 'lucide-react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
 
@@ -31,6 +31,7 @@ const CONTENT = {
     selectLanguage: 'Select Language',
     selectOption: 'How can we assist you today?',
     cropAdvice: 'Crop Yield Optimization',
+    cropSuggestion: 'Smart Crop Suggester',
     pestControl: 'Intelligent Pest Control',
     emergency: 'Disaster Response',
     plantDiagnosis: 'AI Plant Diagnosis',
@@ -49,6 +50,7 @@ const CONTENT = {
     selectLanguage: 'भाषा चुनें',
     selectOption: 'आज हम आपकी कैसे मदद कर सकते हैं?',
     cropAdvice: 'फसल उपज अनुकूलन',
+    cropSuggestion: 'स्मार्ट फसल सुझाव',
     pestControl: 'बुद्धिमान कीट नियंत्रण',
     emergency: 'आपदा प्रतिक्रिया',
     plantDiagnosis: 'AI पौधे का निदान',
@@ -252,6 +254,7 @@ Keep the answer highly conversational, exactly like a human voice assistant. Do 
     const prompts = {
       general: `Act as a universal agricultural assistant. Respond to this query: ${input}. ${context}`,
       cropAdvice: `Act as a senior agricultural expert. Optimize yield or solve crop loss for this query: ${input}. ${context}`,
+      cropSuggestion: `Act as an expert agronomist and agricultural economist. Based on the region, soil, climate, or season mentioned in this query: ${input}. Suggest the specific crop to plant that gives maximum yield and highest profit for these conditions. Give exact reasons why. ${context}`,
       pestControl: `Act as a pest control specialist for crops. Provide the exact organic or conventional management solution (including exact chemical dosage) for this pest/issue: ${input}. ${context}`,
       emergency: `Act as an agricultural disaster management expert. Provide immediate emergency response steps to minimize damage for: ${input}. ${context}`,
       govSchemes: `Act as an expert in Indian government agricultural schemes. Explain the relevant scheme and how to apply for: ${input}. ${context}`,
@@ -513,10 +516,11 @@ Keep the answer highly conversational, exactly like a human voice assistant. Do 
 
               <motion.div 
                 variants={containerVariants} initial="hidden" animate="show"
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 flex-1 w-full pb-8"
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 flex-1 w-full pb-8"
               >
                 {[
                   { key: 'cropAdvice', icon: Leaf, gradient: 'from-emerald-500/30 to-emerald-900/10', color: 'text-emerald-500', border: 'hover:border-emerald-500' },
+                  { key: 'cropSuggestion', icon: Sprout, gradient: 'from-lime-500/30 to-lime-900/10', color: 'text-lime-500', border: 'hover:border-lime-500' },
                   { key: 'pestControl', icon: Bug, gradient: 'from-orange-500/30 to-orange-900/10', color: 'text-orange-500', border: 'hover:border-orange-500' },
                   { key: 'emergency', icon: AlertCircle, gradient: 'from-red-500/30 to-red-900/10', color: 'text-red-500', border: 'hover:border-red-500' },
                   { key: 'plantDiagnosis', icon: Upload, gradient: 'from-blue-500/30 to-blue-900/10', color: 'text-blue-500', border: 'hover:border-blue-500' },
@@ -582,6 +586,7 @@ Keep the answer highly conversational, exactly like a human voice assistant. Do 
                   <div className={`${c.chatAiBg} border ${c.border} rounded-2xl md:rounded-[2rem] rounded-tl-sm md:rounded-tl-lg p-4 md:p-8 ${c.textHeading} max-w-[90%] md:max-w-[80%] text-base md:text-xl font-medium leading-relaxed backdrop-blur-xl shadow-xl`}>
                     Hello! {selectedOption === 'general' ? 'I am listening. Just speak and I will give you the exact solution.' : `How can I help you with ${t[selectedOption]} today?`}
                     {selectedOption === 'plantDiagnosis' && " Please upload a clear photo of the affected plant."}
+                    {selectedOption === 'cropSuggestion' && " Please tell me your region, your soil type, and the current season for the best recommendations."}
                   </div>
                 </motion.div>
 
