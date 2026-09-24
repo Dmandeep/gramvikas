@@ -6,13 +6,22 @@ import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motio
 // Initialize Gemini API
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || 'dummy_key');
 
+// MASSIVELY EXPANDED LANGUAGES LIST
 const LANGUAGES = {
   en: 'English',
-  hi: 'हिंदी',
-  pa: 'ਪੰਜਾਬੀ',
-  ta: 'தமிழ்',
-  te: 'తెలుగు',
-  kn: 'ಕನ್ನಡ'
+  hi: 'हिंदी (Hindi)',
+  bn: 'বাংলা (Bengali)',
+  mr: 'मराठी (Marathi)',
+  te: 'తెలుగు (Telugu)',
+  ta: 'தமிழ் (Tamil)',
+  gu: 'ગુજરાતી (Gujarati)',
+  ur: 'اردو (Urdu)',
+  kn: 'ಕನ್ನಡ (Kannada)',
+  or: 'ଓଡ଼ିଆ (Odia)',
+  ml: 'മലയാളം (Malayalam)',
+  pa: 'ਪੰਜਾਬੀ (Punjabi)',
+  as: 'অসমীয়া (Assamese)',
+  mai: 'मैथिली (Maithili)'
 };
 
 const CONTENT = {
@@ -110,18 +119,13 @@ const fileToGenerativePart = async (file) => {
   };
 };
 
-// --- ULTRA-PREMIUM PRODUCTION BACKGROUND (Vercel/Linear Aesthetic) ---
 const PremiumBackground = ({ mouseX, mouseY, c, theme }) => (
   <div className={`fixed inset-0 pointer-events-none overflow-hidden z-0 ${c.auroraBg} transition-colors duration-700`}>
-    
-    {/* 1. Ambient Top Glow (Subtle, elegant breathing light) */}
     <motion.div 
       animate={{ opacity: [0.3, 0.6, 0.3], scale: [1, 1.05, 1] }}
       transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
       className={`absolute -top-[20vh] left-1/2 -translate-x-1/2 w-[80vw] md:w-[60vw] h-[50vh] ${theme === 'dark' ? 'bg-emerald-600/20' : 'bg-emerald-400/30'} blur-[100px] md:blur-[140px] rounded-full`}
     />
-
-    {/* 2. Edge-Faded Architectural Grid */}
     <div 
       className={`absolute inset-0 ${c.grid} bg-[size:40px_40px] ${theme === 'dark' ? 'opacity-40' : 'opacity-[0.15]'}`}
       style={{
@@ -129,19 +133,10 @@ const PremiumBackground = ({ mouseX, mouseY, c, theme }) => (
         WebkitMaskImage: 'radial-gradient(ellipse at 50% 50%, black 20%, transparent 80%)',
       }}
     />
-    
-    {/* 3. Interactive Mouse Spotlight (Subtle) */}
     <motion.div
       className={`absolute top-0 left-0 w-[500px] h-[500px] ${theme === 'dark' ? 'bg-emerald-500/10' : 'bg-emerald-500/5'} rounded-full blur-[80px] hidden md:block`}
-      style={{
-        x: mouseX,
-        y: mouseY,
-        translateX: '-50%',
-        translateY: '-50%',
-      }}
+      style={{ x: mouseX, y: mouseY, translateX: '-50%', translateY: '-50%' }}
     />
-
-    {/* 4. Film Grain for cinematic texture */}
     <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] mix-blend-overlay"></div>
   </div>
 );
@@ -156,6 +151,10 @@ export default function App() {
   
   const [isListening, setIsListening] = useState(false);
   const [userInput, setUserInput] = useState('');
+  
+  // FIX: Separate the active submitted query from the textarea input
+  const [submittedQuery, setSubmittedQuery] = useState('');
+  
   const [aiResponse, setAiResponse] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
@@ -180,7 +179,8 @@ export default function App() {
     cursorY.set(e.clientY);
   };
 
-  const t = language && CONTENT[language] ? CONTENT[language] : CONTENT.en;
+  // Fallback to English UI if localized UI text isn't available
+  const t = CONTENT[language] || CONTENT.en;
 
   const handleLanguageSelect = (lang) => {
     setLanguage(lang);
@@ -192,6 +192,9 @@ export default function App() {
       alert('Speech recognition not supported in your browser');
       return;
     }
+
+    // Immediately cancel any ongoing TTS speech so the AI doesn't talk over the user
+    window.speechSynthesis.cancel();
 
     const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
     const recognition = new SpeechRecognition();
@@ -241,15 +244,18 @@ export default function App() {
   };
 
   const getPromptForOption = (option, input) => {
-    const context = `Context: Indian agriculture. Keep the answer highly conversational, exactly like a human voice assistant. Give the exact solution and actionable advice directly. Do NOT use markdown tables or complex formatting as this will be read aloud by TTS. Keep it brief and precise. Answer in ${LANGUAGES[language]}.`;
+    const context = `Context: Indian agriculture. 
+1. Explain the exact problem very clearly in simple terms so that everyone can understand it.
+2. Give the complete, exact solution and actionable advice directly.
+Keep the answer highly conversational, exactly like a human voice assistant. Do NOT use markdown tables, bolding, or complex formatting as this will be read aloud by TTS. Keep it precise. Answer fluently in ${LANGUAGES[language]}.`;
     
     const prompts = {
-      general: `Act as a universal agricultural assistant. Answer this query directly and provide an exact solution: ${input}. ${context}`,
-      cropAdvice: `Act as a senior agricultural expert. Provide a highly specific, exact solution for optimizing yield or reducing crop loss based on this query: ${input}. ${context}`,
-      pestControl: `Act as a pest control specialist for crops. Provide the exact organic or conventional management solution (including dosage if chemical) for this pest/issue: ${input}. ${context}`,
-      emergency: `Act as an agricultural disaster management expert. Provide immediate, exact emergency response steps to minimize damage for: ${input}. ${context}`,
-      govSchemes: `Act as an expert in Indian government agricultural schemes. Give the exact name of the relevant scheme and how to apply for: ${input}. ${context}`,
-      marketInfo: `Act as an agricultural market analyst in India. Provide direct insights on pricing or where to sell for: ${input}. ${context}`
+      general: `Act as a universal agricultural assistant. Respond to this query: ${input}. ${context}`,
+      cropAdvice: `Act as a senior agricultural expert. Optimize yield or solve crop loss for this query: ${input}. ${context}`,
+      pestControl: `Act as a pest control specialist for crops. Provide the exact organic or conventional management solution (including exact chemical dosage) for this pest/issue: ${input}. ${context}`,
+      emergency: `Act as an agricultural disaster management expert. Provide immediate emergency response steps to minimize damage for: ${input}. ${context}`,
+      govSchemes: `Act as an expert in Indian government agricultural schemes. Explain the relevant scheme and how to apply for: ${input}. ${context}`,
+      marketInfo: `Act as an agricultural market analyst in India. Provide pricing or selling advice for: ${input}. ${context}`
     };
     return prompts[option] || prompts.general;
   };
@@ -266,13 +272,19 @@ export default function App() {
       return;
     }
 
+    // FIX: Lock in the submitted query to the UI, then clear the textarea instantly
+    setSubmittedQuery(inputStr);
+    setUserInput(''); 
     setIsLoading(true);
     setAiResponse('');
+    
+    // Stop any current voice playback before generating a new response
+    window.speechSynthesis.cancel();
+
     try {
-      // Upgraded to gemini-flash-latest to ensure no 404s and the best, fastest model is selected
       const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
       if (selectedOption === 'plantDiagnosis' && uploadedFile) {
-        const prompt = `Act as an expert plant pathologist. Analyze this plant image and identify any diseases or pest damage. Provide: 1. Exact Diagnosis 2. Exact Treatment recommendations (organic and chemical). Keep it conversational and brief. Respond in ${LANGUAGES[language]}. User query: ${inputStr}`;
+        const prompt = `Act as an expert plant pathologist. Analyze this plant image and identify any diseases or pest damage. 1. Explain the exact problem very clearly. 2. Provide the complete exact treatment recommendations (organic and chemical). Keep it conversational and brief, no markdown tables. Respond in ${LANGUAGES[language]}. User query: ${inputStr}`;
         const imagePart = await fileToGenerativePart(uploadedFile);
         
         const result = await model.generateContent([prompt, imagePart]);
@@ -284,6 +296,7 @@ export default function App() {
         const result = await model.generateContent(prompt);
         const response = await result.response;
         setAiResponse(response.text());
+        // Voice triggers ONLY ONCE upon initial AI response generation
         speakResponse(response.text());
       }
     } catch (error) {
@@ -297,9 +310,15 @@ export default function App() {
 
   const speakResponse = (text) => {
     if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel(); // Guarantee previous voices are cut off
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = language === 'en' ? 'en-US' : `${language}-IN`;
-      window.speechSynthesis.cancel();
+      // Clean up any stray markdown asterisks before speaking
+      const cleanText = text.replace(/\*/g, '');
+      utterance.text = cleanText;
+      // Map correctly to TTS locale string
+      const langCode = language === 'en' ? 'en-US' : `${language}-IN`;
+      utterance.lang = langCode;
+      
       window.speechSynthesis.speak(utterance);
     }
   };
@@ -312,7 +331,7 @@ export default function App() {
 
   const containerVariants = {
     hidden: { opacity: 0 },
-    show: { opacity: 1, transition: { staggerChildren: 0.08, delayChildren: 0.3 } }
+    show: { opacity: 1, transition: { staggerChildren: 0.08, delayChildren: 0.1 } }
   };
 
   const itemVariants = {
@@ -396,7 +415,7 @@ export default function App() {
               initial="initial" animate="in" exit="out" variants={pageVariants}
               className="w-full h-full flex flex-col md:flex-row overflow-y-auto md:overflow-hidden absolute inset-0"
             >
-              <div className={`w-full md:w-1/2 min-h-[50vh] md:h-full flex flex-col justify-center p-8 md:p-16 lg:p-24 bg-gradient-to-b md:bg-gradient-to-r from-${theme === 'dark' ? 'slate-950/80' : 'slate-50/80'} to-transparent backdrop-blur-sm md:border-r border-b md:border-b-0 ${c.border} relative z-10 transition-colors duration-700`}>
+              <div className={`w-full md:w-1/3 lg:w-2/5 min-h-[40vh] md:h-full flex flex-col justify-center p-8 md:p-12 lg:p-16 bg-gradient-to-b md:bg-gradient-to-r from-${theme === 'dark' ? 'slate-950/90' : 'slate-50/90'} to-transparent backdrop-blur-sm md:border-r border-b md:border-b-0 ${c.border} relative z-20 transition-colors duration-700`}>
                 <motion.div 
                   initial={{ scale: 0, rotate: -20 }} 
                   animate={{ scale: 1, rotate: 0, y: [0, -12, 0] }} 
@@ -405,27 +424,29 @@ export default function App() {
                     rotate: { type: "spring", delay: 0.2 },
                     y: { duration: 5, repeat: Infinity, ease: "easeInOut" } 
                   }} 
-                  className="w-32 h-32 md:w-48 md:h-48 mb-8 md:mb-12 relative mx-auto md:mx-0"
+                  className="w-24 h-24 md:w-32 md:h-32 mb-6 md:mb-10 relative mx-auto md:mx-0"
                 >
-                  <div className="absolute inset-0 bg-emerald-400/70 rounded-[3rem] blur-3xl animate-pulse"></div>
-                  <div className={`relative z-10 p-[3px] rounded-[3rem] bg-gradient-to-tr from-emerald-400 via-teal-100 to-white shadow-[0_0_50px_rgba(52,211,153,0.7)]`}>
-                    <img src="/logo.png" alt="Logo" className="w-full h-full object-cover rounded-[2.75rem] brightness-110 contrast-125" />
+                  <div className="absolute inset-0 bg-emerald-400/70 rounded-[2rem] blur-3xl animate-pulse"></div>
+                  <div className={`relative z-10 p-[3px] rounded-[2rem] bg-gradient-to-tr from-emerald-400 via-teal-100 to-white shadow-[0_0_40px_rgba(52,211,153,0.7)]`}>
+                    <img src="/logo.png" alt="Logo" className="w-full h-full object-cover rounded-[1.75rem] brightness-110 contrast-125" />
                   </div>
                 </motion.div>
 
-                <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className={`font-heading text-5xl md:text-6xl lg:text-8xl font-black ${c.textHeading} mb-4 md:mb-6 tracking-tighter leading-[1.1] text-center md:text-left drop-shadow-xl transition-colors duration-700`}>
+                <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className={`font-heading text-4xl md:text-5xl lg:text-7xl font-black ${c.textHeading} mb-4 tracking-tighter leading-[1.1] text-center md:text-left drop-shadow-xl transition-colors duration-700`}>
                   Rural<br className="hidden md:block"/><span className="text-emerald-500 md:block drop-shadow-[0_0_15px_rgba(52,211,153,0.3)]">Intelligence.</span>
                 </motion.h1>
-                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className={`${c.textMuted} text-lg md:text-2xl font-medium max-w-xl leading-relaxed text-center md:text-left mx-auto md:mx-0 transition-colors duration-700`}>
-                  {t.subtitle}
+                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className={`${c.textMuted} text-base md:text-xl font-medium max-w-sm leading-relaxed text-center md:text-left mx-auto md:mx-0 transition-colors duration-700`}>
+                  Empowering rural India with Multimodal AI support.
                 </motion.p>
               </div>
               
-              <div className={`w-full md:w-1/2 min-h-[50vh] md:h-full flex flex-col justify-start md:justify-center p-8 md:p-16 lg:p-24 ${theme==='light' ? 'bg-white/40' : 'bg-white/5'} backdrop-blur-3xl relative z-10 transition-colors duration-700`}>
-                <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="text-emerald-500 font-bold tracking-[0.3em] uppercase text-xs md:text-sm mb-8 md:mb-12 text-center md:text-left drop-shadow-md">{t.selectLanguage}</motion.h2>
+              <div className={`w-full md:w-2/3 lg:w-3/5 h-auto md:h-full flex flex-col justify-start md:justify-center p-6 md:p-12 lg:p-16 ${theme==='light' ? 'bg-white/40' : 'bg-white/5'} backdrop-blur-3xl relative z-10 overflow-y-auto custom-scrollbar transition-colors duration-700`}>
+                <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="text-emerald-500 font-bold tracking-[0.3em] uppercase text-xs md:text-sm mb-6 md:mb-10 text-center md:text-left drop-shadow-md">Select Language</motion.h2>
+                
+                {/* DENSE GRID FOR ALL 14 LANGUAGES */}
                 <motion.div 
                   variants={containerVariants} initial="hidden" animate="show"
-                  className="grid grid-cols-2 md:grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6 w-full"
+                  className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 w-full pb-10 md:pb-0"
                 >
                   {Object.entries(LANGUAGES).map(([code, name]) => (
                     <motion.button
@@ -434,7 +455,7 @@ export default function App() {
                       whileHover={{ scale: 1.05, backgroundColor: 'rgba(16, 185, 129, 0.15)' }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => handleLanguageSelect(code)}
-                      className={`w-full py-6 md:py-8 flex items-center justify-center text-xl md:text-2xl lg:text-3xl font-heading font-bold border ${c.border} rounded-2xl md:rounded-[2rem] ${c.cardBg} ${c.textHeading} hover:text-emerald-500 hover:border-emerald-500/50 transition-all shadow-xl backdrop-blur-md`}
+                      className={`w-full py-4 md:py-6 px-2 flex items-center justify-center text-sm md:text-lg lg:text-xl font-heading font-bold border ${c.border} rounded-2xl ${c.cardBg} ${c.textHeading} hover:text-emerald-500 hover:border-emerald-500/50 transition-all shadow-lg backdrop-blur-md text-center leading-tight`}
                     >
                       {name}
                     </motion.button>
@@ -470,6 +491,7 @@ export default function App() {
                       setSelectedOption('general');
                       setCurrentScreen('detail');
                       setUserInput('');
+                      setSubmittedQuery('');
                       setAiResponse('');
                       setUploadedFile(null);
                       setUploadedImagePreview(null);
@@ -510,6 +532,7 @@ export default function App() {
                       setSelectedOption(key);
                       setCurrentScreen('detail');
                       setUserInput('');
+                      setSubmittedQuery('');
                       setAiResponse('');
                       setUploadedFile(null);
                       setUploadedImagePreview(null);
@@ -562,7 +585,8 @@ export default function App() {
                   </div>
                 </motion.div>
 
-                {(userInput || uploadedImagePreview) && (
+                {/* Render the SUBMITTED QUERY (prevents text vanishing bug) */}
+                {(submittedQuery || uploadedImagePreview) && (
                   <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="flex gap-3 md:gap-6 flex-row-reverse w-full">
                     <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-emerald-500 flex-shrink-0 flex items-center justify-center text-white font-black text-lg md:text-xl shadow-[0_0_20px_rgba(16,185,129,0.4)] border border-emerald-400/30">
                       U
@@ -571,7 +595,7 @@ export default function App() {
                       {uploadedImagePreview && (
                         <img src={uploadedImagePreview} alt="Uploaded" className="rounded-xl md:rounded-2xl mb-3 md:mb-5 max-w-full max-h-48 md:max-h-80 object-cover border border-emerald-500/20 shadow-xl" />
                       )}
-                      {userInput && <p>{userInput}</p>}
+                      {submittedQuery && <p>{submittedQuery}</p>}
                     </div>
                   </motion.div>
                 )}
@@ -582,7 +606,7 @@ export default function App() {
                        <Loader2 className="w-5 h-5 md:w-7 md:h-7 animate-spin text-slate-900" />
                     </div>
                     <div className={`${c.chatAiBg} border ${c.border} rounded-2xl md:rounded-[2rem] rounded-tl-sm md:rounded-tl-lg p-4 md:p-8 ${c.textMuted} text-base md:text-xl flex items-center backdrop-blur-xl shadow-xl font-medium`}>
-                      Generating exact solution...
+                      Analyzing and finding exact solution...
                     </div>
                   </motion.div>
                 )}
@@ -594,6 +618,8 @@ export default function App() {
                     </div>
                     <div className={`${c.chatAiBg} border ${c.border} rounded-2xl md:rounded-[2rem] rounded-tl-sm md:rounded-tl-lg p-5 md:p-10 ${c.textHeading} max-w-[95%] md:max-w-[85%] relative group shadow-[0_0_30px_rgba(16,185,129,0.1)] backdrop-blur-2xl`}>
                       <div className={`prose ${c.prose} prose-emerald max-w-none font-medium leading-relaxed text-base md:text-xl`} dangerouslySetInnerHTML={{ __html: aiResponse.replace(/\n/g, '<br/>').replace(/\*\*(.*?)\*\*/g, '<strong class="text-emerald-500 font-bold">$1</strong>') }} />
+                      
+                      {/* Secondary manual trigger for speaking the voice again */}
                       <motion.button
                         whileHover={{ scale: 1.1, rotate: -10 }}
                         whileTap={{ scale: 0.9 }}
